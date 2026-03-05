@@ -1,0 +1,5 @@
+server:
+  port: 5000
+
+data:
+  baseUrl: ${DATA_SERVICE_URL:http://localhost:5003}
