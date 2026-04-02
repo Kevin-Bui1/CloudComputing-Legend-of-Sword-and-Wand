@@ -1,0 +1,18 @@
+package db;
+
+import java.sql.*;
+
+public class DatabaseConnector {
+    private static final String URL  = "jdbc:mysql:
+    private static final String USER = "root";
+    private static final String PASS = "1234";
+    private static DatabaseConnector instance;
+
+    private DatabaseConnector() {}
+    public static DatabaseConnector getInstance() {
+        if (instance==null) instance=new DatabaseConnector(); return instance;
+    }
+    public Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASS);
+    }
+}
