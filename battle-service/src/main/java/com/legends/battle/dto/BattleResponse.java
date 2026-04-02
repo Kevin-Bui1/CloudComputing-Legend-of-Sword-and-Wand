@@ -2,7 +2,6 @@ package com.legends.battle.dto;
 
 import java.util.List;
 
-/** Response returned after each battle action. */
 public class BattleResponse {
     private String actionResult;
     private List<UnitDTO> playerParty;

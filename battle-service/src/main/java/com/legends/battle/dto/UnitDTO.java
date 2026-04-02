@@ -1,6 +1,5 @@
 package com.legends.battle.dto;
 
-/** Serialisable snapshot of a Unit for REST transport. */
 public class UnitDTO {
     private String name;
     private int level;
@@ -12,7 +11,7 @@ public class UnitDTO {
     private int maxMana;
     private boolean stunned;
     private boolean alive;
-    private String heroClass; // null for enemies
+    private String heroClass; 
 
     public UnitDTO() {}
 

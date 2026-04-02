@@ -3,7 +3,6 @@ package com.legends.battle.dto;
 import com.legends.battle.model.Action;
 import java.util.List;
 
-/** Request payload to start a new battle. */
 public class BattleRequest {
     private List<UnitDTO> playerParty;
     private List<UnitDTO> enemyParty;

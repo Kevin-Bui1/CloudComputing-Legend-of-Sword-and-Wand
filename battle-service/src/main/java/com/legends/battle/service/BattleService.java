@@ -12,32 +12,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * BattleService is the glue between the REST controller and the Battle engine.
- *
- * The microservice requirement says services must be stateless from the client's
- * perspective, but we still need to track battle state between requests (you can't
- * re-send the whole battle each time). I solved this with an in-memory map:
- *
- *   battleId (String) --> Battle instance
- *
- * ConcurrentHashMap is used instead of HashMap because multiple requests could
- * hit the server at the same time and we don't want them stepping on each other.
- *
- * When a battle ends, the entry is removed to free memory.
- */
 @Service
 public class BattleService {
 
-    /** Stores active battle sessions. Key = battleId chosen by the caller. */
     private final ConcurrentHashMap<String, Battle> sessions = new ConcurrentHashMap<>();
 
-    /**
-     * Creates a new battle session, builds the turn queue, and returns the initial state.
-     *
-     * @param battleId  a unique string to identify this battle (e.g. "user1_battle")
-     * @param request   contains both parties as lists of UnitDTOs
-     */
     public BattleResponse startBattle(String battleId, BattleRequest request) {
         Battle battle = new Battle();
         battle.init(mapToUnits(request.getPlayerParty(), true),
@@ -46,12 +25,6 @@ public class BattleService {
         return buildResponse(battle, "Battle started! Turn order initialised.");
     }
 
-    /**
-     * Executes one action in an existing battle and returns the updated state.
-     *
-     * @param battleId  must match a key in the sessions map
-     * @param action    what the current unit is doing this turn
-     */
     public BattleResponse executeAction(String battleId, Action action) {
         Battle battle = sessions.get(battleId);
         if (battle == null) {
@@ -62,17 +35,11 @@ public class BattleService {
         String result = battle.processTurn(action);
         BattleResponse response = buildResponse(battle, result);
         if (battle.isBattleOverFlag()) {
-            sessions.remove(battleId); // clean up ended sessions
+            sessions.remove(battleId); 
         }
         return response;
     }
 
-    // -- Private helpers -----------------------------------------------------
-
-    /**
-     * Converts a list of UnitDTOs (from JSON) into proper Unit objects.
-     * isHero=true creates Hero instances, false creates Enemy instances.
-     */
     private List<Unit> mapToUnits(List<UnitDTO> dtos, boolean isHero) {
         return dtos.stream().map(dto -> {
             Unit u;
@@ -94,7 +61,6 @@ public class BattleService {
         }).collect(java.util.stream.Collectors.toList());
     }
 
-    /** Converts a Unit back into a DTO so it can be serialized to JSON. */
     private UnitDTO toDTO(Unit u) {
         UnitDTO dto = new UnitDTO();
         dto.setName(u.getName());
@@ -111,7 +77,6 @@ public class BattleService {
         return dto;
     }
 
-    /** Packages the current battle state into a response object. */
     private BattleResponse buildResponse(Battle battle, String result) {
         BattleResponse response = new BattleResponse();
         response.setActionResult(result);
