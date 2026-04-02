@@ -14,18 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Tests for the Profile Service (AccountManager).
- *
- * @SpringBootTest loads the full application context so I can test with real
- * Spring beans (including the actual BCrypt encoder and H2 database).
- *
- * @ActiveProfiles("test") switches to the test application.properties which
- * uses an in-memory H2 database instead of MySQL — no external database needed.
- *
- * @Transactional rolls back every test after it runs so each test starts with
- * a clean database and they don't interfere with each other.
- */
+
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
