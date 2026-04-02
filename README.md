@@ -29,7 +29,6 @@ Instead of building one big application, we split the game into services that ea
 | Docker Desktop | 24+     |
 | Docker Compose | 2.20+   |
 
-> **Note:** If you're running with Docker, you don't need Java or Maven installed locally — the Docker build handles compilation inside the container.
 
 ---
 
@@ -253,7 +252,6 @@ The `battleId` is a string you choose (e.g. `"user1_battle"`). It links follow-u
 }
 ```
 
-> **Note:** For Deliverable 1, the PvP service handles the invitation flow only. Full integration with party selection and live battle execution is planned for Deliverable 2.
 
 ---
 
