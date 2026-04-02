@@ -16,14 +16,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Tests for the Data Service (GameSaveDAO).
- *
- * These run against an in-memory H2 database (set up by application-test.properties)
- * so I don't need a real MySQL instance to run the tests.
- *
- * @Transactional rolls back after each test, so test data doesn't bleed between tests.
- */
+
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
