@@ -8,6 +8,8 @@ public class BattleResponse {
     private List<UnitDTO> enemyParty;
     private boolean battleOver;
     private String winner;
+    private boolean insufficientMana = false;
+    private List<String> log = new java.util.ArrayList<>();
 
     public String getActionResult()              { return actionResult; }
     public void setActionResult(String r)        { this.actionResult = r; }
@@ -19,4 +21,8 @@ public class BattleResponse {
     public void setBattleOver(boolean b)         { this.battleOver = b; }
     public String getWinner()                    { return winner; }
     public void setWinner(String winner)         { this.winner = winner; }
+    public boolean isInsufficientMana()              { return insufficientMana; }
+    public void setInsufficientMana(boolean b)       { this.insufficientMana = b; }
+    public List<String> getLog()                     { return log; }
+    public void setLog(List<String> log)             { this.log = log; }
 }

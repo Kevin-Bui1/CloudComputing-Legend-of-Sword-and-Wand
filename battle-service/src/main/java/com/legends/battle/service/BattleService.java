@@ -25,17 +25,22 @@ public class BattleService {
         return buildResponse(battle, "Battle started! Turn order initialised.");
     }
 
-    public BattleResponse executeAction(String battleId, Action action) {
+    public BattleResponse executeAction(String battleId, Action action, String ability, int targetIndex) {
         Battle battle = sessions.get(battleId);
         if (battle == null) {
             BattleResponse err = new BattleResponse();
             err.setActionResult("Battle session not found: " + battleId);
             return err;
         }
-        String result = battle.processTurn(action);
+        String result = battle.processTurn(action, ability, targetIndex);
         BattleResponse response = buildResponse(battle, result);
+
+        if (result.contains("insufficient mana")) {
+            response.setInsufficientMana(true);
+        }
+
         if (battle.isBattleOverFlag()) {
-            sessions.remove(battleId); 
+            sessions.remove(battleId);
         }
         return response;
     }
@@ -84,6 +89,7 @@ public class BattleService {
         response.setEnemyParty(battle.getEnemyParty().stream().map(this::toDTO).toList());
         response.setBattleOver(battle.isBattleOverFlag());
         response.setWinner(battle.getWinner());
+        response.setLog(battle.getLastLog());
         return response;
     }
 }

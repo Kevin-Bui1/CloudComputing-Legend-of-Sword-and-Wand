@@ -65,6 +65,22 @@ public class Hero {
         mana = maxMana;
     }
 
+
+    public int getExperienceInCurrentLevel() {
+        int threshold = 0;
+        for (int i = 1; i < level; i++) {          // sum up to (level-1)
+            threshold += 500 + 75 * i + 20 * i * i;
+        }
+        return Math.max(0, experience - threshold);
+    }
+
+
+    public void deductExperience(int amount) {
+        int inLevel = getExperienceInCurrentLevel();
+        int deduct  = Math.min(amount, inLevel);   // can't go below 0 for this level
+        this.experience = Math.max(0, this.experience - deduct);
+    }
+
     public String getName()                     { return name; }
     public void setName(String name)            { this.name = name; }
     public int getLevel()                       { return level; }

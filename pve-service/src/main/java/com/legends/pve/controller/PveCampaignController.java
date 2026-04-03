@@ -1,6 +1,7 @@
 package com.legends.pve.controller;
 
 import com.legends.pve.dto.*;
+import com.legends.pve.dto.BattleResolveRequest;
 import com.legends.pve.service.PveController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -91,5 +92,15 @@ public class PveCampaignController {
     public ResponseEntity<Void> endCampaign(@PathVariable Long userId) {
         pveController.endCampaign(userId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{userId}/battle/resolve")
+    public ResponseEntity<CampaignResponse> resolveBattle(
+            @PathVariable Long userId,
+            @RequestBody BattleResolveRequest request) {
+        CampaignResponse response = pveController.resolveBattle(userId, request);
+        return response.isSuccess()
+                ? ResponseEntity.ok(response)
+                : ResponseEntity.badRequest().body(response);
     }
 }

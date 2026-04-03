@@ -5,6 +5,8 @@ public class Campaign {
 
     private Party party;
     private int currentRoom = 0;
+    private int lastInnRoom = 0;
+    private int itemsValue  = 0;
     private static final int MAX_ROOMS = 30;
 
     public Campaign(Party party) {
@@ -25,4 +27,8 @@ public class Campaign {
     public void advanceRoom()               { currentRoom++; }
     public boolean isComplete()             { return currentRoom >= MAX_ROOMS; }
     public int getMaxRooms()                { return MAX_ROOMS; }
+    public int getLastInnRoom()             { return lastInnRoom; }
+    public void setLastInnRoom(int r)       { this.lastInnRoom = r; }
+    public int getItemsValue()              { return itemsValue; }
+    public void addItemsValue(int v)        { this.itemsValue += v; }
 }

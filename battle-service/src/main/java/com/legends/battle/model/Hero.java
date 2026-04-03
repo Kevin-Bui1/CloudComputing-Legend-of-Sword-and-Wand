@@ -21,15 +21,10 @@ public class Hero extends Unit {
     public String castAbility(List<Unit> allies, List<Unit> enemies) {
         switch (heroClass) {
 
-            // ORDER: Protect (shield 10% HP to all) costs 25 mana
-            //        Heal (heal lowest HP ally 25% of maxHp) costs 35 mana
             case "ORDER" -> {
                 if (!spendMana(35)) return getName() + " has insufficient mana!";
-                Unit lowest = null;
-                for (Unit a : allies) {
-                    if (a.isAlive() && (lowest == null || a.getHp() < lowest.getHp()))
-                        lowest = a;
-                }
+                Unit lowest = allies.stream().filter(Unit::isAlive)
+                        .min(Comparator.comparingInt(Unit::getHp)).orElse(null);
                 if (lowest != null) {
                     int heal = lowest.getMaxHp() / 4;
                     lowest.restoreHp(heal);
@@ -38,16 +33,15 @@ public class Hero extends Unit {
                 return getName() + " found no ally to heal.";
             }
 
-            // CHAOS: Fireball hits up to 3 enemies, costs 30 mana
             case "CHAOS" -> {
                 if (!spendMana(30)) return getName() + " has insufficient mana!";
-                int dmg = Math.max(1, getAttack());
                 int count = 0;
-                StringBuilder sb = new StringBuilder(getName() + " launches a Fireball! ");
+                StringBuilder sb = new StringBuilder(getName() + " launches Fireball! ");
                 for (Unit e : enemies) {
                     if (e.isAlive() && count < 3) {
+                        int dmg = Math.max(1, getAttack() - e.getDefense());
                         e.takeDamage(dmg);
-                        sb.append(e.getName()).append(" takes ").append(dmg).append(" dmg. ");
+                        sb.append(e.getName()).append(" -").append(dmg).append("HP. ");
                         count++;
                     }
                 }

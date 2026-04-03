@@ -64,6 +64,7 @@ public class PveController {
             response.setExpReward(battleRoom.calculateTotalExp());
             response.setGoldReward(battleRoom.calculateTotalGold());
         } else if (room instanceof InnRoom innRoom) {
+            campaign.setLastInnRoom(campaign.getCurrentRoom());
             response.setRecruits(innRoom.getRecruits());
         }
         return response;
@@ -107,7 +108,8 @@ public class PveController {
         Party party = campaign.getParty();
         int levelScore = party.getHeroes().stream().mapToInt(h -> h.getLevel() * 100).sum();
         int goldScore  = party.getGold() * 10;
-        return levelScore + goldScore;
+        int itemScore  = campaign.getItemsValue();   // ← ADD THIS
+        return levelScore + goldScore + itemScore;
     }
 
     /**
@@ -120,12 +122,14 @@ public class PveController {
         Party party = campaign.getParty();
         int cost;
         switch (itemName) {
-            case "Bread"       -> cost = 200;
-            case "Potion"      -> cost = 350;
-            case "Elixir"      -> cost = 500;
-            case "Power Shard" -> cost = 400;
-            case "Iron Shield" -> cost = 400;
-            default            -> { return CampaignResponse.error("Unknown item: " + itemName); }
+            case "Bread"  -> cost = 200;
+            case "Cheese" -> cost = 500;
+            case "Steak"  -> cost = 1000;
+            case "Water"  -> cost = 150;
+            case "Juice"  -> cost = 400;
+            case "Wine"   -> cost = 750;
+            case "Elixir" -> cost = 2000;
+            default       -> { return CampaignResponse.error("Unknown item: " + itemName); }
         }
 
         if (!party.deductGold(cost)) {
@@ -136,14 +140,21 @@ public class PveController {
         for (Hero h : party.getHeroes()) {
             if (h.getHp() <= 0) continue;
             switch (itemName) {
-                case "Bread"       -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 20));
-                case "Potion"      -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 50));
-                case "Elixir"      -> { h.setHp(Math.min(h.getMaxHp(), h.getHp() + 80));
-                    h.setMana(Math.min(h.getMaxMana(), h.getMana() + 40)); }
-                case "Power Shard" -> h.setAttack(h.getAttack() + 10);
-                case "Iron Shield" -> h.setDefense(h.getDefense() + 8);
+                case "Bread"  -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 20));
+                case "Cheese" -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 50));
+                case "Steak"  -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 200));
+                case "Water"  -> h.setMana(Math.min(h.getMaxMana(), h.getMana() + 10));
+                case "Juice"  -> h.setMana(Math.min(h.getMaxMana(), h.getMana() + 30));
+                case "Wine"   -> h.setMana(Math.min(h.getMaxMana(), h.getMana() + 100));
+                case "Elixir" -> {
+                    // revive + full HP + full mana for this hero
+                    h.setHp(h.getMaxHp());
+                    h.setMana(h.getMaxMana());
+                }
             }
         }
+        int itemScore = (cost / 2) * 10;
+        campaign.addItemsValue(itemScore);
         return CampaignResponse.of(campaign, "Purchased " + itemName + " for " + cost + "g.", null);
     }
 
@@ -186,5 +197,61 @@ public class PveController {
     /** Removes the campaign session from memory. */
     public void endCampaign(Long userId) {
         activeCampaigns.remove(userId);
+    }
+
+    /**
+     * Called by the HTTP controller after a battle ends.
+     * Computes exp/gold from enemy levels; applies win or loss effects per spec.
+     */
+    public CampaignResponse resolveBattle(Long userId, BattleResolveRequest req) {
+        Campaign campaign = activeCampaigns.get(userId);
+        if (campaign == null) return CampaignResponse.error("No active campaign.");
+
+        Party party = campaign.getParty();
+
+        // Compute totals from enemy levels
+        int totalExp  = req.getEnemyLevels().stream().mapToInt(l -> 50 * l).sum();
+        int totalGold = req.getEnemyLevels().stream().mapToInt(l -> 75 * l).sum();
+
+        if (req.isPlayerWon()) {
+            // Apply hero HP/mana from battle-end snapshots
+            if (req.getHeroSnapshots() != null) {
+                for (BattleResolveRequest.HeroSnapshot snap : req.getHeroSnapshots()) {
+                    party.getHeroes().stream()
+                            .filter(h -> h.getName().equals(snap.getName()))
+                            .findFirst()
+                            .ifPresent(h -> { h.setHp(snap.getHp()); h.setMana(snap.getMana()); });
+                }
+            }
+
+            // Divide exp among surviving heroes (hp > 0)
+            List<Hero> survivors = party.getHeroes().stream()
+                    .filter(h -> h.getHp() > 0).toList();
+            if (!survivors.isEmpty()) {
+                int expEach = totalExp / survivors.size();
+                survivors.forEach(h -> h.gainExperience(expEach));
+            }
+
+            party.addGold(totalGold);
+            return CampaignResponse.of(campaign,
+                    "Victory! +" + totalExp + " exp, +" + totalGold + "g.", null);
+
+        } else {
+            // Loss: -10% gold, -30% current-level exp per hero, revive at 1 HP,
+            //       return to last inn room
+            int goldLoss = party.getGold() / 10;
+            party.setGold(Math.max(0, party.getGold() - goldLoss));
+
+            for (Hero h : party.getHeroes()) {
+                int expLoss = (int)(h.getExperienceInCurrentLevel() * 0.30);
+                h.deductExperience(expLoss);
+                h.setHp(1);   // revive at 1 HP
+            }
+
+            campaign.setCurrentRoom(campaign.getLastInnRoom());
+
+            return CampaignResponse.of(campaign,
+                    "Defeat! Lost " + goldLoss + "g and 30% current-level exp. Returned to last inn.", null);
+        }
     }
 }

@@ -27,7 +27,8 @@ public class BattleController {
     @PostMapping("/{battleId}/action")
     public ResponseEntity<BattleResponse> executeAction(
             @PathVariable String battleId,
-            @RequestParam Action action) {
-        return ResponseEntity.ok(battleService.executeAction(battleId, action));
-    }
+            @RequestParam Action action,
+            @RequestParam(defaultValue = "") String ability,
+            @RequestParam(defaultValue = "0") int targetIndex) {
+        return ResponseEntity.ok(battleService.executeAction(battleId, action, ability, targetIndex));
 }
