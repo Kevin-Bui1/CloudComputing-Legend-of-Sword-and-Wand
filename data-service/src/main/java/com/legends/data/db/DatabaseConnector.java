@@ -1,11 +1,11 @@
-package db;
+package com.legends.data.db;
 
 import java.sql.*;
 
 public class DatabaseConnector {
-    private static final String URL  = "jdbc:mysql:
-    private static final String USER = "root";
-    private static final String PASS = "1234";
+    private static final String URL  = System.getenv().getOrDefault("DB_URL", "jdbc:mysql://mysql:3306/losw");
+    private static final String USER = System.getenv().getOrDefault("DB_USER", "root");
+    private static final String PASS = System.getenv().getOrDefault("DB_PASSWORD", "root");
     private static DatabaseConnector instance;
 
     private DatabaseConnector() {}
