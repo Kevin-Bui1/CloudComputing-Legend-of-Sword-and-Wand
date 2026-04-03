@@ -24,8 +24,12 @@ public class PveController {
     /**
      * Starts a new campaign for the user with the given heroes.
      * Creates fresh Hero objects from the request and puts them in a Party.
+     * Returns a 409 error if the user already has an active campaign in progress.
      */
     public CampaignResponse startCampaign(Long userId, List<HeroRequest> heroRequests) {
+        if (activeCampaigns.containsKey(userId)) {
+            return CampaignResponse.error("You already have a campaign in progress. Complete or save-and-exit it before starting a new one.");
+        }
         Party party = new Party();
         for (HeroRequest req : heroRequests) {
             Hero hero = new Hero(req.getName(), req.getHeroClass());

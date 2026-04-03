@@ -32,7 +32,10 @@ public class PveCampaignController {
     public ResponseEntity<CampaignResponse> startCampaign(
             @PathVariable Long userId,
             @RequestBody List<HeroRequest> heroes) {
-        return ResponseEntity.ok(pveController.startCampaign(userId, heroes));
+        CampaignResponse response = pveController.startCampaign(userId, heroes);
+        return response.isSuccess()
+                ? ResponseEntity.ok(response)
+                : ResponseEntity.status(409).body(response);
     }
 
     @PostMapping("/{userId}/next-room")

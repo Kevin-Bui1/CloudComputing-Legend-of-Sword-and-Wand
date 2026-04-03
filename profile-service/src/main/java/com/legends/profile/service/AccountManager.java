@@ -62,6 +62,14 @@ public class AccountManager {
                 .orElse(AuthResponse.error("User not found."));
     }
 
+    /** Looks up a profile by username — used for PvP invite validation. */
+    public AuthResponse getProfileByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(p -> AuthResponse.ok(p.getUserId(), p.getUsername(),
+                        p.getScores(), p.getRankings(), p.getCampaignProgress()))
+                .orElse(AuthResponse.error("User not found."));
+    }
+
     /** Updates score and ranking after a campaign finishes or a PvP match ends. */
     public AuthResponse updateStats(Long userId, int newScore, int ranking) {
         return userRepository.findById(userId).map(p -> {

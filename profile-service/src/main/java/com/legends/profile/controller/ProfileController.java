@@ -67,6 +67,22 @@ public class ProfileController {
     }
 
     /**
+     * GET /api/profile/by-username/{username}
+     * Looks up a user by username — used by PvP invite validation to check the
+     * opponent exists before sending an invite.
+     *
+     * @param username path variable
+     * @return 200 with profile; 404 if not found
+     */
+    @GetMapping("/by-username/{username}")
+    public ResponseEntity<AuthResponse> getProfileByUsername(@PathVariable String username) {
+        AuthResponse response = accountManager.getProfileByUsername(username);
+        return response.isSuccess()
+                ? ResponseEntity.ok(response)
+                : ResponseEntity.notFound().build();
+    }
+
+    /**
      * Updates score and ranking after a game event
      * @param userId    path variable
      * @param newScore  query param — score points to add
