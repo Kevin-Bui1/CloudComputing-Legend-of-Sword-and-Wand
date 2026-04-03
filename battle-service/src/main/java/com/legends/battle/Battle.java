@@ -131,7 +131,7 @@ public class Battle {
             doAttack(attacker);
             return;
         }
-        int dmg = Math.max(0, attacker.getAttack() - target.getDefense());
+        int dmg = Math.max(1, attacker.getAttack() - target.getDefense());
         target.takeDamage(dmg);
         notifyDamage(attacker, target, dmg);
     }

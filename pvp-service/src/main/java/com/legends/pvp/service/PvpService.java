@@ -11,21 +11,29 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PvpService {
 
     private final AtomicInteger inviteCounter = new AtomicInteger(1);
-    private final Map<Integer, String> invites = new ConcurrentHashMap<>();
+
     private final Map<Integer, int[]> leagueTable = new ConcurrentHashMap<>();
     // int[] = [wins, losses]
 
+    private final Map<Integer, Invite> invites = new ConcurrentHashMap<>();
+
+    private static class Invite {
+        int fromUserId;
+        String toUsername;
+        String status;
+        Invite(int from, String to) { this.fromUserId = from; this.toUsername = to; this.status = "PENDING"; }
+    }
+
     public int createInvite(int fromUserId, String toUsername) {
         int inviteId = inviteCounter.getAndIncrement();
-        invites.put(inviteId, "PENDING");
+        invites.put(inviteId, new Invite(fromUserId, toUsername));
         return inviteId;
     }
 
     public boolean acceptInvite(int inviteId, int toUserId) {
-        if (!invites.containsKey(inviteId)) {
-            return false;
-        }
-        invites.put(inviteId, "ACCEPTED");
+        Invite invite = invites.get(inviteId);
+        if (invite == null || !invite.status.equals("PENDING")) return false;
+        invite.status = "ACCEPTED";
         return true;
     }
 

@@ -27,6 +27,7 @@ public class PveController {
      * Returns a 409 error if the user already has an active campaign in progress.
      */
     public CampaignResponse startCampaign(Long userId, List<HeroRequest> heroRequests) {
+
         if (activeCampaigns.containsKey(userId)) {
             return CampaignResponse.error("You already have a campaign in progress. Complete or save-and-exit it before starting a new one.");
         }
@@ -138,7 +139,7 @@ public class PveController {
 
         // Apply effect to all living heroes
         for (Hero h : party.getHeroes()) {
-            if (h.getHp() <= 0) continue;
+            if (h.getHp() <= 0 && !itemName.equals("Elixir")) continue;
             switch (itemName) {
                 case "Bread"  -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 20));
                 case "Cheese" -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 50));
@@ -178,13 +179,10 @@ public class PveController {
         }
 
         Hero hero = new Hero(heroName, heroClass);
-        hero.setLevel(heroLevel);
-        // Scale stats to match level
-        hero.setAttack(5 + (heroLevel - 1) * 2);
-        hero.setDefense(5 + (heroLevel - 1));
-        hero.setMaxHp(100 + (heroLevel - 1) * 10);
+        for (int i = 1; i < heroLevel; i++) {
+            hero.gainExperience(hero.expToNextLevel());
+        }
         hero.setHp(hero.getMaxHp());
-        hero.setMaxMana(50 + (heroLevel - 1) * 5);
         hero.setMana(hero.getMaxMana());
         party.addHero(hero);
 
