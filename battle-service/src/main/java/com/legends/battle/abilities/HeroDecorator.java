@@ -1,7 +1,7 @@
 package com.legends.battle.abilities;
-import com.legends.battle.Hero;
+import com.legends.battle.model.Hero;
+import com.legends.battle.model.Unit;
 import java.util.List;
-import com.legends.battle.Unit;
 
 public abstract class HeroDecorator extends Hero {
     protected final Hero inner;

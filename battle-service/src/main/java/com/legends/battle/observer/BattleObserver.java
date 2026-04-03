@@ -1,6 +1,6 @@
 package com.legends.battle.observer;
-import com.legends.battle.Action;
-import com.legends.battle.Unit;
+import com.legends.battle.model.Action;
+import com.legends.battle.model.Unit;
 
 public interface BattleObserver {
     default void onTurnStart(Unit unit) {}

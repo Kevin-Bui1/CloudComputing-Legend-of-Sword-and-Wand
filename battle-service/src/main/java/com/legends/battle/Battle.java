@@ -1,5 +1,7 @@
 package com.legends.battle;
 
+import com.legends.battle.model.Unit;
+import com.legends.battle.model.Action;
 import com.legends.battle.observer.BattleObserver;
 import com.legends.battle.strategy.impl.AttackStrategy;
 import com.legends.battle.strategy.impl.CastStrategy;
