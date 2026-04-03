@@ -32,7 +32,7 @@ public class PveController {
             return CampaignResponse.error("You already have a campaign in progress. Complete or save-and-exit it before starting a new one.");
         }
         Party party = new Party();
-        party.setGold(200); // Starting gold
+        party.setGold(0);
         for (HeroRequest req : heroRequests) {
             Hero hero = new Hero(req.getName(), req.getHeroClass());
             party.addHero(hero);
@@ -224,7 +224,7 @@ public class PveController {
 
             // Divide exp among surviving heroes (hp > 0)
             List<Hero> survivors = party.getHeroes().stream()
-                    .filter(h -> h.getHp() > 0).toList();
+                    .filter(h -> h.getHp() > 1).toList();
             if (!survivors.isEmpty()) {
                 int expEach = totalExp / survivors.size();
                 survivors.forEach(h -> h.gainExperience(expEach));
