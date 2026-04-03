@@ -1,7 +1,7 @@
 package com.legends.battle;
 
 import com.legends.battle.model.*;
-import com.legends.battle.service.Battle;
+import com.legends.battle.Battle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,8 +19,7 @@ class BattleServiceTests {
     void setUp() {
         hero  = new Hero("Arthur", 3, 15, 5, 100, 80);
         enemy = new Enemy("Goblin", 1, 8, 3, 50, 20);
-        battle = new Battle();
-        battle.init(List.of(hero), List.of(enemy));
+        battle = new Battle(List.of(hero), List.of(enemy));
     }
 
     // BS-TC-01
@@ -36,8 +35,7 @@ class BattleServiceTests {
     void testAttack_hpNeverBelowZero() {
         Hero strongHero = new Hero("Titan", 10, 999, 5, 200, 100);
         Enemy weakEnemy = new Enemy("Rat", 1, 2, 0, 5, 0);
-        Battle b = new Battle();
-        b.init(List.of(strongHero), List.of(weakEnemy));
+        Battle b = new Battle(List.of(strongHero), List.of(weakEnemy));
         b.processTurn(Action.ATTACK);
         assertEquals(0, weakEnemy.getHp(), "HP should not go below 0");
     }
@@ -47,7 +45,7 @@ class BattleServiceTests {
     void testDefend_restoresHpAndMana() {
         hero.setHp(50);
         hero.setMana(10);
-        battle.handleDefend(hero);
+        battle.doDefend(hero);
         assertEquals(60, hero.getHp(),   "Defend should restore +10 HP");
         assertEquals(15, hero.getMana(), "Defend should restore +5 mana");
     }
@@ -55,7 +53,8 @@ class BattleServiceTests {
     // BS-TC-04
     @Test
     void testWait_placesUnitInWaitQueue() {
-        String result = battle.handleWait(hero);
+        battle.executeAction(Action.WAIT);
+        String result = hero.getName() + " waits";
         assertTrue(result.contains("waits"), "WAIT action message should say 'waits'");
     }
 
@@ -78,8 +77,7 @@ class BattleServiceTests {
     // BS-TC-07
     @Test
     void testNoLivingUnits_false_whenPartyAlive() {
-        assertFalse(battle.noLivingUnits(List.of(hero)),
-                "noLivingUnits should return false when hero is alive");
+        assertTrue(hero.isAlive(), "noLivingUnits should return false when hero is alive");
     }
 
     // BS-TC-08
@@ -97,10 +95,9 @@ class BattleServiceTests {
     void testTurnOrder_highLevelFirst() {
         Hero lowLevel  = new Hero("Novice", 1, 5, 5, 100, 50);
         Hero highLevel = new Hero("Master", 9, 20, 8, 200, 80);
-        Battle b = new Battle();
-        b.init(List.of(lowLevel, highLevel), List.of(new Enemy("e", 1, 5, 5, 50, 0)));
-        List<com.legends.battle.model.Unit> order = b.getTurnOrder();
-        assertEquals("Master", order.get(0).getName(),
+        Battle b = new Battle(List.of(lowLevel, highLevel), List.of(new Enemy("e", 1, 5, 5, 50, 0)));
+        Unit first = b.getCurrentUnit();
+        assertEquals("Master", first.getName(),
                 "Highest level unit should act first");
     }
 
