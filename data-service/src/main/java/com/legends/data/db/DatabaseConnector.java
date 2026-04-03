@@ -3,7 +3,7 @@ package db;
 import java.sql.*;
 
 public class DatabaseConnector {
-    private static final String URL  = "jdbc:mysql:
+    private static final String URL  = "jdbc:mysql://mysql:3306/legends_db";
     private static final String USER = "root";
     private static final String PASS = "1234";
     private static DatabaseConnector instance;
