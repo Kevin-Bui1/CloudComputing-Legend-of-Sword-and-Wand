@@ -12,18 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * GameSaveDAO handles all campaign persistence — this is the only class that
- * talks to the database in the data service.
- *
- * "DAO" stands for Data Access Object, which is just a pattern where you
- * put all your database logic in one place and hide it from the rest of the code.
- * The controller calls these methods without knowing any SQL or JPA details.
- *
- * The @Transactional annotations tell Spring to wrap each method in a DB transaction.
- * If something goes wrong halfway through a save, the whole thing gets rolled back
- * instead of leaving the database in a half-updated state.
- */
+
 @Service
 public class GameSaveDAO {
 
@@ -33,17 +22,7 @@ public class GameSaveDAO {
         this.partyRepository = partyRepository;
     }
 
-    /**
-     * Saves or updates the player's current campaign state (UC5 — Exit and Save).
-     *
-     * I check if an active campaign already exists for this user:
-     *  - If yes: update it in place (no duplicate)
-     *  - If no:  create a new Party record
-     *
-     * The hero list is cleared and rebuilt each time to make sure it stays in sync.
-     * This is safe because @OneToMany with orphanRemoval=true deletes old heroes
-     * automatically when they're removed from the list.
-     */
+
     @Transactional
     public Party saveCampaignProgress(SaveRequest request) {
         Party party = partyRepository
@@ -70,10 +49,7 @@ public class GameSaveDAO {
     }
 
     /**
-     * Loads the player's active campaign from the database (UC6 — Continue Campaign).
-     *
-     * Returns an Optional so the controller can handle the "no save found" case cleanly
-     * by returning a 404 response instead of crashing.
+     * Loads the player's active campaign from the database
      */
     @Transactional(readOnly = true)
     public Optional<CampaignState> fetchSavedCampaign(Long userId) {
