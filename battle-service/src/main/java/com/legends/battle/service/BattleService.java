@@ -1,5 +1,6 @@
 package com.legends.battle.service;
 
+import com.legends.battle.Battle;
 import com.legends.battle.dto.BattleRequest;
 import com.legends.battle.dto.BattleResponse;
 import com.legends.battle.dto.UnitDTO;
@@ -18,9 +19,9 @@ public class BattleService {
     private final ConcurrentHashMap<String, Battle> sessions = new ConcurrentHashMap<>();
 
     public BattleResponse startBattle(String battleId, BattleRequest request) {
-        Battle battle = new Battle();
-        battle.init(mapToUnits(request.getPlayerParty(), true),
-                    mapToUnits(request.getEnemyParty(), false));
+        Battle battle = new Battle(
+                mapToUnits(request.getPlayerParty(), true),
+                mapToUnits(request.getEnemyParty(), false));
         sessions.put(battleId, battle);
         return buildResponse(battle, "Battle started! Turn order initialised.");
     }
@@ -32,18 +33,13 @@ public class BattleService {
             err.setActionResult("Battle session not found: " + battleId);
             return err;
         }
-        String result = battle.processTurn(action, ability, targetIndex);
+        battle.executeAction(action);
+        String result = battle.isBattleOver() ? "Battle over! Winner: " + battle.getWinner() : "Action executed.";
         BattleResponse response = buildResponse(battle, result);
 
-        if (result.contains("insufficient mana")) {
-            response.setInsufficientMana(true);
-        }
-
-        if (battle.isBattleOverFlag()) {
+        if (battle.isBattleOver()) {
             sessions.remove(battleId);
         }
-        return response;
-    }
 
     private List<Unit> mapToUnits(List<UnitDTO> dtos, boolean isHero) {
         return dtos.stream().map(dto -> {
@@ -87,9 +83,9 @@ public class BattleService {
         response.setActionResult(result);
         response.setPlayerParty(battle.getPlayerParty().stream().map(this::toDTO).toList());
         response.setEnemyParty(battle.getEnemyParty().stream().map(this::toDTO).toList());
-        response.setBattleOver(battle.isBattleOverFlag());
+        response.setBattleOver(battle.isBattleOver());
         response.setWinner(battle.getWinner());
-        response.setLog(battle.getLastLog());
+        response.setLog(List.of());
         return response;
     }
 }
