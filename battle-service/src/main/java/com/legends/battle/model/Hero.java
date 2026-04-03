@@ -1,5 +1,6 @@
 package com.legends.battle.model;
 
+import java.util.Comparator;
 import java.util.List;
 
 public class Hero extends Unit {

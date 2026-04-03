@@ -31,4 +31,5 @@ public class BattleController {
             @RequestParam(defaultValue = "") String ability,
             @RequestParam(defaultValue = "0") int targetIndex) {
         return ResponseEntity.ok(battleService.executeAction(battleId, action, ability, targetIndex));
+    }
 }
