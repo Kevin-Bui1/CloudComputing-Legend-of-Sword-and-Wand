@@ -71,18 +71,21 @@ public class RoomFactory {
 
     /** Generates a random enemy party scaled to the player's strength. */
     private List<Enemy> generateEnemyParty(int cumulativeLevel) {
-        int partySize = 1 + RNG.nextInt(5);
+        int maxSize = Math.min(5, Math.max(1, cumulativeLevel / 2 + 1));
+        int partySize = 1 + RNG.nextInt(maxSize);
+
         List<Enemy> enemies = new ArrayList<>();
-        // Target enemy cumulative level between (cumulativeLevel - 10) and cumulativeLevel
+
+        // Target cumulative level between (cumulativeLevel - 10) and cumulativeLevel, min 1
         int targetCumulative = Math.max(1, cumulativeLevel + RNG.nextInt(11) - 10);
         int avgLevel = Math.max(1, Math.min(10, targetCumulative / Math.max(1, partySize)));
 
         for (int i = 0; i < partySize; i++) {
             int level = Math.max(1, Math.min(10, avgLevel + RNG.nextInt(3) - 1));
             String name = ENEMY_NAMES[RNG.nextInt(ENEMY_NAMES.length)] + " " + (i + 1);
-            int attack  = 5 + level * 2;
-            int defense = 3 + level;
-            int hp      = 40 + level * 15;
+            int attack  = 3 + level * 2;   // slightly lower than hero attack scaling
+            int defense = 1 + level;       // reduced so early heroes can actually deal damage
+            int hp      = 30 + level * 10; // slightly less HP early on
             int mana    = 20;
             enemies.add(new Enemy(name, level, attack, defense, hp, mana));
         }
