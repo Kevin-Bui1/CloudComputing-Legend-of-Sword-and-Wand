@@ -6,6 +6,7 @@ public class InnActionRequest {
     private String heroName;
     private String heroClass;
     private Integer heroIndex;
+    private Integer heroLevel;
 
     public CampaignStateRequest getState()          { return state; }
     public void setState(CampaignStateRequest s)    { this.state = s; }
@@ -17,4 +18,6 @@ public class InnActionRequest {
     public void setHeroClass(String heroClass)      { this.heroClass = heroClass; }
     public Integer getHeroIndex()                   { return heroIndex; }
     public void setHeroIndex(Integer heroIndex)     { this.heroIndex = heroIndex; }
+    public int getHeroLevel()                       { return heroLevel != null ? heroLevel : 1; }
+    public void setHeroLevel(Integer heroLevel)     { this.heroLevel = heroLevel; }
 }

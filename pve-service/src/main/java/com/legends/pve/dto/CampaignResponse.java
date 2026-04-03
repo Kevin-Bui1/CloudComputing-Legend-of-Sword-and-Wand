@@ -2,6 +2,7 @@ package com.legends.pve.dto;
 
 import com.legends.pve.model.Campaign;
 import com.legends.pve.model.Enemy;
+import com.legends.pve.model.InnRoom;
 import java.util.List;
 
 /** Full campaign state response returned to the client. */
@@ -16,6 +17,7 @@ public class CampaignResponse {
     private List<Enemy> enemies;
     private int expReward;
     private int goldReward;
+    private List<InnRoom.Recruit> recruits;
 
     public static CampaignResponse of(Campaign c, String message, String roomType) {
         CampaignResponse r = new CampaignResponse();
@@ -62,6 +64,8 @@ public class CampaignResponse {
     public void setEnemies(List<Enemy> enemies)     { this.enemies = enemies; }
     public int getExpReward()                       { return expReward; }
     public void setExpReward(int expReward)         { this.expReward = expReward; }
-    public int getGoldReward()                      { return goldReward; }
-    public void setGoldReward(int goldReward)       { this.goldReward = goldReward; }
+    public int getGoldReward()                            { return goldReward; }
+    public void setGoldReward(int goldReward)             { this.goldReward = goldReward; }
+    public List<InnRoom.Recruit> getRecruits()            { return recruits; }
+    public void setRecruits(List<InnRoom.Recruit> r)      { this.recruits = r; }
 }

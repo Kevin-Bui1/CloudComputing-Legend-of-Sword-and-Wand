@@ -18,15 +18,55 @@ public class RoomFactory {
             "Wraith", "Bandit", "Wolf", "Spider", "Necromancer"
     };
 
-    /**Generates a room for the given floor and party strength */
+    private static final String[] HERO_CLASSES = { "WARRIOR", "MAGE", "ORDER", "CHAOS" };
+
+    private static final String[] RECRUIT_NAMES = {
+            "Aldric", "Syra", "Brom", "Lira", "Thane",
+            "Zara", "Dusk", "Finn", "Mira", "Cade"
+    };
+
+    /** Generates a room for the given floor and party strength */
     public Room generateRoom(int floor, int cumulativeLevel) {
+        return generateRoom(floor, cumulativeLevel, 0);
+    }
+
+    /** Generates a room, also accounting for current party size to gate recruits. */
+    public Room generateRoom(int floor, int cumulativeLevel, int partySize) {
         int battleChance = Math.min(90, 60 + (cumulativeLevel / 10) * 3);
         boolean isBattle = RNG.nextInt(100) < battleChance;
 
         if (isBattle) {
             return new BattleRoom(floor, generateEnemyParty(cumulativeLevel));
         }
-        return new InnRoom(floor);
+
+        InnRoom inn = new InnRoom(floor);
+
+        // Recruits only appear in rooms 1–10, and only if the party isn't full
+        if (floor <= 10 && partySize < 5) {
+            inn.setRecruits(generateRecruits());
+        }
+
+        return inn;
+    }
+
+    /** Generates a small random pool of recruitable heroes (1–3). */
+    private List<InnRoom.Recruit> generateRecruits() {
+        int count = 1 + RNG.nextInt(3); // 1 to 3 recruits
+        List<InnRoom.Recruit> recruits = new ArrayList<>();
+        List<String> usedNames = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            String name;
+            do {
+                name = RECRUIT_NAMES[RNG.nextInt(RECRUIT_NAMES.length)];
+            } while (usedNames.contains(name));
+            usedNames.add(name);
+
+            String heroClass = HERO_CLASSES[RNG.nextInt(HERO_CLASSES.length)];
+            int level = 1 + RNG.nextInt(4); // level 1–4
+            int cost  = level == 1 ? 0 : level * 200;
+            recruits.add(new InnRoom.Recruit(name, heroClass, level, cost));
+        }
+        return recruits;
     }
 
     /** Generates a random enemy party scaled to the player's strength. */

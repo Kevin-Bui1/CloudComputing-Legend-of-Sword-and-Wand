@@ -521,7 +521,7 @@
       enterBattle(data.enemies, data.heroes || []);
     } else if (data.roomType === 'INN') {
       document.getElementById('pve-room-type').textContent = '🏠 Inn Room';
-      enterInn(data.message, data.heroes || []);
+      enterInn(data.message, data.heroes || [], data.gold || 0, data.recruits || []);
     } else {
       document.getElementById('pve-msg-inline').textContent = data.message;
       document.getElementById('next-room-btn').style.display = 'block';
@@ -733,18 +733,16 @@
 
   let innState = { recruits: [] };
 
-  function enterInn(message, heroes) {
+  function enterInn(message, heroes, gold, recruits) {
     document.getElementById('inn-heal-log').textContent = message;
-    innState.recruits = [
-      { name: 'Aldric', heroClass: 'WARRIOR' },
-      { name: 'Syra',   heroClass: 'MAGE'    },
-    ];
-    renderInnShop();
+    document.getElementById('gold-amt').textContent = gold || 0;
+    innState.recruits = recruits || [];
+    renderInnShop(gold);
     renderInnRecruits(heroes.length);
     goTo('inn');
   }
 
-  function renderInnShop() {
+  function renderInnShop(gold) {
     const items = [
       { name: 'Bread',       cost: 200, desc: '+20 HP' },
       { name: 'Potion',      cost: 350, desc: '+50 HP' },
@@ -752,42 +750,65 @@
       { name: 'Power Shard', cost: 400, desc: '+10 ATK' },
       { name: 'Iron Shield', cost: 400, desc: '+8 DEF' },
     ];
-    document.getElementById('inn-shop').innerHTML = items.map(item =>
-      `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
-         <div>
-           <strong>${item.name}</strong>
-           <span style="font-size:.8rem;color:var(--muted);margin-left:8px">${item.desc}</span>
-         </div>
-         <button class="gold" style="padding:4px 10px;font-size:.8rem" onclick="buyItem('${item.name}',${item.cost})">
-           ${item.cost}g
-         </button>
-       </div>`
-    ).join('');
+    const currentGold = parseInt(document.getElementById('gold-amt').textContent, 10) || 0;
+    document.getElementById('inn-shop').innerHTML = `
+      <p style="color:var(--accent);font-size:.9rem;margin-bottom:10px">💰 Your gold: <strong>${currentGold}g</strong></p>` +
+      items.map(item =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+           <div>
+             <strong>${item.name}</strong>
+             <span style="font-size:.8rem;color:var(--muted);margin-left:8px">${item.desc}</span>
+           </div>
+           <button class="gold" style="padding:4px 10px;font-size:.8rem" onclick="buyItem('${item.name}',${item.cost})">
+             ${item.cost}g
+           </button>
+         </div>`
+      ).join('');
   }
 
   function renderInnRecruits(partySize) {
-    document.getElementById('inn-recruits').innerHTML = innState.recruits.map(r =>
-      `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+    const recruitsEl = document.getElementById('inn-recruits');
+    if (innState.recruits.length === 0) {
+      recruitsEl.innerHTML = partySize >= 5
+        ? '<p style="color:var(--muted);font-size:.9rem">Your party is full (5/5).</p>'
+        : '<p style="color:var(--muted);font-size:.9rem">No heroes available for hire here.</p>';
+      return;
+    }
+    recruitsEl.innerHTML = innState.recruits.map(r => {
+      const costLabel = r.cost === 0 ? 'Free' : `${r.cost}g`;
+      const disabled  = partySize >= 5 ? 'disabled' : '';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
          <div>
            <strong>${r.name}</strong>
            <span class="class-badge" style="background:var(--accent2);color:#fff;border-radius:4px;padding:1px 6px;font-size:.75rem;margin-left:6px">${r.heroClass}</span>
+           <span style="font-size:.8rem;color:var(--muted);margin-left:6px">Lv ${r.level}</span>
          </div>
-         <button class="secondary" style="padding:4px 10px;font-size:.8rem" onclick="recruitHero('${r.name}','${r.heroClass}')" ${partySize >= 5 ? 'disabled' : ''}>
-           Recruit
+         <button class="secondary" style="padding:4px 10px;font-size:.8rem" onclick="recruitHero('${r.name}','${r.heroClass}',${r.level})" ${disabled}>
+           ${costLabel}
          </button>
-       </div>`
-    ).join('');
+       </div>`;
+    }).join('');
   }
 
   async function buyItem(itemName) {
     const r = await api('POST', `/api/pve/${state.userId}/inn/buy`, { itemName });
     showMsg('inn-msg', r.data.message || (r.ok ? 'Bought!' : 'Failed.'), r.ok ? 'success' : 'error');
-    if (r.ok) document.getElementById('gold-amt').textContent = r.data.gold || 0;
+    if (r.ok) {
+      document.getElementById('gold-amt').textContent = r.data.gold || 0;
+      renderInnShop(r.data.gold || 0);
+    }
   }
 
-  async function recruitHero(heroName, heroClass) {
-    const r = await api('POST', `/api/pve/${state.userId}/inn/recruit`, { heroName, heroClass });
+  async function recruitHero(heroName, heroClass, heroLevel) {
+    const r = await api('POST', `/api/pve/${state.userId}/inn/recruit`, { heroName, heroClass, heroLevel });
     showMsg('inn-msg', r.data.message || (r.ok ? 'Recruited!' : 'Failed.'), r.ok ? 'success' : 'error');
+    if (r.ok) {
+      document.getElementById('gold-amt').textContent = r.data.gold || 0;
+      // Remove recruited hero from local list and re-render
+      innState.recruits = innState.recruits.filter(rec => rec.name !== heroName);
+      renderInnRecruits(r.data.heroes ? r.data.heroes.length : 0);
+      renderInnShop(r.data.gold || 0);
+    }
   }
 
   function leaveInn() {

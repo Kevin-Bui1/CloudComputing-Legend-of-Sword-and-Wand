@@ -2,7 +2,6 @@ package com.legends.pve.controller;
 
 import com.legends.pve.dto.*;
 import com.legends.pve.service.PveController;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,6 +63,27 @@ public class PveCampaignController {
     @GetMapping("/{userId}/score")
     public ResponseEntity<Integer> getScore(@PathVariable Long userId) {
         return ResponseEntity.ok(pveController.calculateScore(userId));
+    }
+
+    @PostMapping("/{userId}/inn/buy")
+    public ResponseEntity<CampaignResponse> innBuy(
+            @PathVariable Long userId,
+            @RequestBody InnActionRequest request) {
+        CampaignResponse response = pveController.buyItem(userId, request.getItemName());
+        return response.isSuccess()
+                ? ResponseEntity.ok(response)
+                : ResponseEntity.badRequest().body(response);
+    }
+
+    @PostMapping("/{userId}/inn/recruit")
+    public ResponseEntity<CampaignResponse> innRecruit(
+            @PathVariable Long userId,
+            @RequestBody InnActionRequest request) {
+        CampaignResponse response = pveController.recruitHero(
+                userId, request.getHeroName(), request.getHeroClass(), request.getHeroLevel());
+        return response.isSuccess()
+                ? ResponseEntity.ok(response)
+                : ResponseEntity.badRequest().body(response);
     }
 
     @PostMapping("/{userId}/end")
