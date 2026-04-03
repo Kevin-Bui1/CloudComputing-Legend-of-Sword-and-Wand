@@ -284,7 +284,8 @@ public class Battle {
     }
 
     public String processTurn(Action action) {
-        return processTurn(action, "", 0);
+        executeAction(action);
+        return isBattleOver() ? "Battle over! Winner: " + getWinner() : "Action executed.";
     }
 
     private Unit chooseTarget(Unit attacker) {
