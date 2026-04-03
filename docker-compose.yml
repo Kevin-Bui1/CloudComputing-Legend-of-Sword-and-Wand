@@ -6,7 +6,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: losw
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -70,6 +70,18 @@ services:
     depends_on:
       - data-service
       - battle-service
+
+  gateway:
+    build: ./gateway
+    container_name: gateway
+    ports:
+      - "8080:80"
+    depends_on:
+      - profile-service
+      - battle-service
+      - pve-service
+      - pvp-service
+      - data-service
 
 volumes:
   mysql_data:
