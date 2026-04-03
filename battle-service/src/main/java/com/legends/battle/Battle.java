@@ -283,6 +283,10 @@ public class Battle {
         return chooseEnemyAction(enemy);
     }
 
+    public String processTurn(Action action) {
+        return processTurn(action, "", 0);
+    }
+
     private Unit chooseTarget(Unit attacker) {
         List<Unit> opposing = playerParty.contains(attacker) ? enemyParty : playerParty;
         Unit best = null;
