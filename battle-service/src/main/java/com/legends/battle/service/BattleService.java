@@ -40,6 +40,8 @@ public class BattleService {
         if (battle.isBattleOver()) {
             sessions.remove(battleId);
         }
+        return response;
+    }
 
     private List<Unit> mapToUnits(List<UnitDTO> dtos, boolean isHero) {
         return dtos.stream().map(dto -> {
