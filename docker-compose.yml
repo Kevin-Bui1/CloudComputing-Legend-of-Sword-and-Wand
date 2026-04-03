@@ -35,6 +35,9 @@ services:
       - "5000:5000"
     environment:
       DATA_SERVICE_URL: http://data-service:5003
+      DB_URL: jdbc:mysql://mysql:3306/losw
+      DB_USER: root
+      DB_PASSWORD: root
     depends_on:
       - data-service
 
