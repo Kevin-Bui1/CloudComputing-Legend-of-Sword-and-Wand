@@ -25,6 +25,21 @@ public class CampaignResponse {
         r.currentRoom = c.getCurrentRoom();
         r.gold = c.getParty().getGold();
         r.cumulativeLevel = c.getParty().getCumulativeLevel();
+
+        r.heroes = c.getParty().getHeroes().stream().map(h -> {
+            HeroRequest hr = new HeroRequest();
+            hr.setName(h.getName());
+            hr.setHeroClass(h.getHeroClass());
+            hr.setLevel(h.getLevel());
+            hr.setAttack(h.getAttack());
+            hr.setDefense(h.getDefense());
+            hr.setHp(h.getHp());
+            hr.setMaxHp(h.getMaxHp());
+            hr.setMana(h.getMana());
+            hr.setMaxMana(h.getMaxMana());
+            return hr;
+        }).collect(java.util.stream.Collectors.toList());
+
         return r;
     }
 

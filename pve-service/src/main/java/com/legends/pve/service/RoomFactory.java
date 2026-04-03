@@ -33,12 +33,13 @@ public class RoomFactory {
     private List<Enemy> generateEnemyParty(int cumulativeLevel) {
         int partySize = 1 + RNG.nextInt(5);
         List<Enemy> enemies = new ArrayList<>();
-        int avgLevel = Math.max(1, cumulativeLevel / 5);
+        // Target enemy cumulative level between (cumulativeLevel - 10) and cumulativeLevel
+        int targetCumulative = Math.max(1, cumulativeLevel + RNG.nextInt(11) - 10);
+        int avgLevel = Math.max(1, Math.min(10, targetCumulative / Math.max(1, partySize)));
 
         for (int i = 0; i < partySize; i++) {
             int level = Math.max(1, Math.min(10, avgLevel + RNG.nextInt(3) - 1));
             String name = ENEMY_NAMES[RNG.nextInt(ENEMY_NAMES.length)] + " " + (i + 1);
-            // Scale stats with level
             int attack  = 5 + level * 2;
             int defense = 3 + level;
             int hp      = 40 + level * 15;

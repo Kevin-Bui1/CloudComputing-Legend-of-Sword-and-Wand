@@ -256,14 +256,12 @@
 <div id="screen-pvp-accept" class="screen">
   <h1>PvP Invite</h1>
   <div class="card" style="max-width:460px">
-    <p style="color:var(--muted);margin-bottom:12px">An invite was created. Share the invite ID with your opponent and choose parties to proceed.</p>
+    <p style="color:var(--muted);margin-bottom:12px">An invite was created. Share the invite ID with your opponent and choose your party to proceed.</p>
     <div id="pvp-invite-details"></div>
-    <label style="margin-top:14px">Your Party Name</label>
-    <input id="pvp-sender-party" placeholder="e.g. Fellowship">
-    <label>Opponent Party Name</label>
-    <input id="pvp-receiver-party" placeholder="e.g. DarkLords">
+    <label style="margin-top:14px">Your Party</label>
+    <select id="pvp-sender-party"></select>
     <div style="display:flex;gap:8px;margin-top:14px">
-      <button class="gold" onclick="acceptPvpInvite()">Accept &amp; Choose Parties</button>
+      <button class="gold" onclick="acceptPvpInvite()">Accept &amp; Choose Party</button>
       <button class="secondary" onclick="goTo('dashboard')">Cancel</button>
     </div>
     <div id="pvp-accept-msg"></div>
@@ -795,6 +793,19 @@ async function sendPvpInvite() {
 
   if (r.ok && r.data.inviteId) {
     state.pendingInviteId = r.data.inviteId;
+
+    // Load sender's saved parties into dropdown
+    const partiesR = await api('GET', `/api/data/parties/${state.userId}`);
+    const parties  = (partiesR.ok && Array.isArray(partiesR.data)) ? partiesR.data : [];
+    const select   = document.getElementById('pvp-sender-party');
+    if (parties.length === 0) {
+      select.innerHTML = '<option value="">No saved parties</option>';
+    } else {
+      select.innerHTML = parties.map(p =>
+        `<option value="${p.partyName}">${p.partyName} (Room ${p.currentRoom}/30)</option>`
+      ).join('');
+    }
+
     document.getElementById('pvp-invite-details').innerHTML = `
       <p>✅ Invite created!</p>
       <p style="margin-top:6px;color:var(--muted)">Invite ID: <strong style="color:var(--accent)">${r.data.inviteId}</strong></p>
@@ -807,16 +818,15 @@ async function sendPvpInvite() {
 }
 
 async function acceptPvpInvite() {
-  const senderParty   = document.getElementById('pvp-sender-party').value.trim();
-  const receiverParty = document.getElementById('pvp-receiver-party').value.trim();
-  if (!senderParty || !receiverParty) {
-    return showMsg('pvp-accept-msg', 'Both party names are required.', 'error');
+  const senderParty = document.getElementById('pvp-sender-party').value.trim();
+  if (!senderParty) {
+    return showMsg('pvp-accept-msg', 'Please select your party.', 'error');
   }
 
   const acceptR = await api('POST', '/api/pvp/accept', {
-    inviteId:     state.pendingInviteId,
+    inviteId:    state.pendingInviteId,
+    toUserId:    state.userId,
     senderParty,
-    receiverParty,
   });
   if (!acceptR.ok) {
     return showMsg('pvp-accept-msg', acceptR.data.error || 'Accept failed.', 'error');
