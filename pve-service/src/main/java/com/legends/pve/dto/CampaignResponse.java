@@ -13,7 +13,7 @@ public class CampaignResponse {
     private int gold;
     private int cumulativeLevel;
     private List<HeroRequest> heroes;
-    private List<Enemy> enemies;   // populated only for BATTLE rooms
+    private List<Enemy> enemies;
     private int expReward;
     private int goldReward;
 

@@ -2,19 +2,6 @@ package com.legends.data.model;
 
 import jakarta.persistence.*;
 
-/**
- * HeroEntity is the JPA entity for the "heroes" table.
- *
- * Each hero belongs to exactly one party (@ManyToOne). The party_id column
- * in the database is the foreign key that links them.
- *
- * I use FetchType.LAZY on the party relationship so Hibernate doesn't load
- * the whole party object every time I load a single hero — it only loads it
- * if the code actually calls getParty().
- *
- * The default stats here (level 1, 5/5 attack/defense, 100 HP, 50 mana) match
- * the assignment spec's starting values exactly.
- */
 @Entity
 @Table(name = "heroes")
 public class HeroEntity {

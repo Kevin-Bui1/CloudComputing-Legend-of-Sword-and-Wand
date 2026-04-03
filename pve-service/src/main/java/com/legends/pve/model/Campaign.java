@@ -1,12 +1,6 @@
 package com.legends.pve.model;
 
-/**
- * Campaign tracks the overall state of a single dungeon run.
- *
- * It's a simple wrapper around the party and the current room counter.
- * The max is 30 rooms as specified in the assignment. Once currentRoom
- * hits 30, isComplete() returns true and the score gets calculated.
- */
+
 public class Campaign {
 
     private Party party;

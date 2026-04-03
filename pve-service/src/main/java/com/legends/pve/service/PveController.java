@@ -8,21 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * PveController is the main service class for the PvE campaign.
- * (The name is a bit confusing — it's a @Service not an HTTP controller.
- * The actual HTTP controller is PveCampaignController which calls this.)
- *
- * This class manages all active campaign sessions. Each user gets their own
- * Campaign object stored in a ConcurrentHashMap (same thread-safety reason
- * as in BattleService — multiple users can be playing at the same time).
- *
- * The campaign flow is:
- *   startCampaign → nextRoom (x30) → calculateScore → endCampaign
- *
- * restoreCampaign is the "continue" path — loads a saved state from the
- * Data Service and rebuilds a Campaign object from it.
- */
+
 @Service
 public class PveController {
 
@@ -51,13 +37,7 @@ public class PveController {
         return CampaignResponse.of(campaign, message, null);
     }
 
-    /**
-     * Moves the party into the next room and returns what's in it.
-     *
-     * The RoomFactory decides if it's a battle or an inn based on probability.
-     * For battle rooms, I include the enemy list and the exp/gold rewards in the response
-     * so the client knows what it's fighting for before the battle starts.
-     */
+    /** Moves the party into the next room and returns what's in it. */
     public CampaignResponse nextRoom(Long userId) {
         Campaign campaign = activeCampaigns.get(userId);
         if (campaign == null) return CampaignResponse.error("No active campaign found.");
@@ -81,22 +61,14 @@ public class PveController {
         return response;
     }
 
-    /**
-     * Returns the current campaign state without advancing to a new room.
-     * Used when the player wants to review their party mid-campaign.
-     */
+    /** Returns the current campaign state without advancing to a new room. */
     public CampaignResponse getCampaign(Long userId) {
         Campaign campaign = activeCampaigns.get(userId);
         if (campaign == null) return CampaignResponse.error("No active campaign.");
         return CampaignResponse.of(campaign, "Campaign info retrieved.", null);
     }
 
-    /**
-     * Rebuilds an in-memory Campaign from a saved state loaded from the Data Service.
-     * This is UC6 — the player exits and comes back later.
-     *
-     * All hero stats (level, HP, attack, etc.) are restored exactly as saved.
-     */
+    /** Rebuilds an in-memory Campaign from a saved state loaded from the Data Service. */
     public CampaignResponse restoreCampaign(Long userId, SavedStateRequest savedState) {
         Party party = new Party();
         party.setGold(savedState.getGold());
@@ -119,8 +91,6 @@ public class PveController {
 
     /**
      * Calculates the final score at the end of a 30-room campaign.
-     *
-     * Formula from the assignment:
      *   (sum of hero levels * 100) + (gold * 10)
      */
     public int calculateScore(Long userId) {
@@ -132,10 +102,7 @@ public class PveController {
         return levelScore + goldScore;
     }
 
-    /**
-     * Removes the campaign session from memory.
-     * Called after the player saves (so the Data Service has it) or after score is recorded.
-     */
+    /** Removes the campaign session from memory. */
     public void endCampaign(Long userId) {
         activeCampaigns.remove(userId);
     }

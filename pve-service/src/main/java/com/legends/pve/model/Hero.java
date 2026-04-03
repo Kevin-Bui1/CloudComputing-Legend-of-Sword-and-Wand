@@ -1,19 +1,6 @@
 package com.legends.pve.model;
 
-/**
- * Hero is the player-controlled character in the PvE campaign.
- *
- * This is a separate class from the Hero in battle-service because the PvE service
- * needs the levelling logic (gainExperience, expToNextLevel) while the battle service
- * just needs the combat stats. They're separate microservices so they can't share code.
- *
- * Level-up stat formula from the assignment (applied every level):
- *   Base:    +1 attack, +1 defense, +5 maxHp, +2 maxMana
- *   ORDER:   +2 defense, +5 maxMana extra
- *   CHAOS:   +3 attack, +5 maxHp extra
- *   WARRIOR: +2 attack, +3 defense extra
- *   MAGE:    +1 attack, +5 maxMana extra
- */
+
 public class Hero {
 
     private String name;

@@ -47,4 +47,10 @@ public class PvpController {
                 pvpService.recordResult(request.winnerUserId(), request.loserUserId())
         );
     }
+
+    @GetMapping("/league")
+    public ResponseEntity<Map<Integer, int[]>> getLeague() {
+        return ResponseEntity.ok(pvpService.getLeagueTable());
+    }
+
 }

@@ -97,7 +97,7 @@ class SystemIntegrationTest {
     void startPveCampaign_shouldReturnRoom0() {
         given()
             .contentType(ContentType.JSON)
-            .body("[{\"name\":\"Aldric\",\"heroClass\":\"WARRIOR\"," +
+            .body("[{\"name\":\"TEST\",\"heroClass\":\"WARRIOR\"," +
                   "\"level\":1,\"attack\":5,\"defense\":5," +
                   "\"hp\":100,\"maxHp\":100,\"mana\":50,\"maxMana\":50}]")
         .when()
@@ -203,7 +203,7 @@ class SystemIntegrationTest {
     void pvpInvite_toNonExistentPlayer_shouldReturn400() {
         given()
             .contentType(ContentType.JSON)
-            .body("{\"fromUsername\":\"" + username + "\",\"toUsername\":\"ghost_xyz_9999\"}")
+            .body("{\"fromUsername\":\"" + username + "\",\"toUsername\":\"INVITESUBJECT\"}")
         .when()
             .post("/api/pvp/invite")
         .then()

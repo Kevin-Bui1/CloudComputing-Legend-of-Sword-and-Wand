@@ -4,18 +4,6 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Party is the JPA entity for the "parties" table in MySQL.
- *
- * Each row is one saved party belonging to one user. The activeCampaign flag
- * distinguishes a campaign in progress (true) from a completed one saved for PvP (false).
- *
- * The heroes list uses @OneToMany with cascade and orphanRemoval:
- *  - CascadeType.ALL means saving/deleting a party automatically saves/deletes its heroes
- *  - orphanRemoval=true means if I remove a hero from the list and save, it gets deleted from the DB
- *
- * This is why GameSaveDAO can safely do party.getHeroes().clear() before re-adding them.
- */
 @Entity
 @Table(name = "parties")
 public class Party {

@@ -2,19 +2,7 @@ package com.legends.profile.model;
 
 import jakarta.persistence.*;
 
-/**
- * UserProfile is the JPA entity that maps to the "users" table in MySQL.
- *
- * I use @Entity and @Table to tell Spring/Hibernate to manage this class as a
- * database table. The @Id + @GeneratedValue combo lets MySQL auto-generate the userId.
- *
- * Fields:
- *   username     — what the player uses to log in and to receive PvP invitations
- *   passwordHash — BCrypt hash of their password (NEVER the plain text)
- *   scores       — total score accumulated across all completed campaigns
- *   rankings     — their current position in the league table
- *   campaignProgress — which room they're on (0-30) in their active campaign
- */
+
 @Entity
 @Table(name = "users")
 public class UserProfile {

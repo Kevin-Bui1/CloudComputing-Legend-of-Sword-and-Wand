@@ -7,16 +7,7 @@ import com.legends.profile.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-/**
- * AccountManager handles all the logic around user accounts.
- *
- * I separated this from the controller so the controller stays thin —
- * it just takes requests in and sends responses back, while all the actual
- * decision-making (is this username taken? does this password match?) lives here.
- *
- * This is the "Facade" pattern mentioned in our SDD: the controller doesn't need to
- * know anything about the database or password hashing, it just calls these methods.
- */
+
 @Service
 public class AccountManager {
 
@@ -28,16 +19,7 @@ public class AccountManager {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Registers a new user account.
-     *
-     * Checks:
-     *  - username can't be empty
-     *  - password must be at least 4 characters
-     *  - username must not already be taken
-     *
-     * The password is hashed with BCrypt before being saved — we never store plain text.
-     */
+    /** Registers a new user account */
     public AuthResponse register(AuthRequest request) {
         if (request.getUsername() == null || request.getUsername().isBlank()) {
             return AuthResponse.error("Username cannot be empty.");
@@ -57,12 +39,7 @@ public class AccountManager {
                 profile.getScores(), profile.getRankings(), profile.getCampaignProgress());
     }
 
-    /**
-     * Logs a user in by checking their password against the stored BCrypt hash.
-     *
-     * passwordEncoder.matches() handles the BCrypt comparison — we never
-     * decrypt the hash, we just re-hash the input and compare.
-     */
+    /** Logs a user in by checking their password against the stored BCrypt hash */
     public AuthResponse login(AuthRequest request) {
         return userRepository.findByUsername(request.getUsername())
                 .map(profile -> {
@@ -85,10 +62,7 @@ public class AccountManager {
                 .orElse(AuthResponse.error("User not found."));
     }
 
-    /**
-     * Updates score and ranking after a campaign finishes or a PvP match ends.
-     * Score is additive (keeps accumulating), ranking is replaced with the new value.
-     */
+    /** Updates score and ranking after a campaign finishes or a PvP match ends. */
     public AuthResponse updateStats(Long userId, int newScore, int ranking) {
         return userRepository.findById(userId).map(p -> {
             p.setScores(p.getScores() + newScore);
