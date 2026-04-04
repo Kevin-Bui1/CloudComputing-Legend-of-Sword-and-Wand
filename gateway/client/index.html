@@ -18,6 +18,7 @@
       --hp:       #3fb950;
       --mana:     #58a6ff;
       --enemy:    #f85149;
+      --exp:      #c9a84c;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
@@ -53,6 +54,7 @@
     .bar.hp   { background: var(--hp); }
     .bar.mana { background: var(--mana); }
     .bar.enemy-hp { background: var(--enemy); }
+    .bar.exp      { background: var(--exp); }
     .stat-row { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); margin-top: 2px; }
 
     /* ── Hero card ── */
@@ -348,6 +350,10 @@
   }
 
   function renderHeroCard(h, idx, isDead) {
+    const expCur  = h.experience     ?? 0;
+    const expMax  = h.expToNextLevel ?? 595;
+    const atCap   = h.level >= 20;
+    const expLabel = atCap ? 'MAX' : `${expCur} / ${expMax}`;
     return `<div class="hero-card ${isDead ? 'dead' : ''}" id="hero-card-${idx}">
       <div><span class="name">${h.name}</span><span class="class-badge">${h.heroClass || h.heroclass || ''}</span></div>
       <div style="font-size:.78rem;color:var(--muted)">Lv ${h.level} | ATK ${h.attack} DEF ${h.defense}</div>
@@ -355,6 +361,8 @@
       ${renderBar(h.hp, h.maxHp, 'hp')}
       <div style="margin-top:4px;font-size:.78rem">Mana</div>
       ${renderBar(h.mana, h.maxMana, 'mana')}
+      <div style="margin-top:4px;font-size:.78rem;color:var(--exp)">EXP — Lv ${h.level} [ ${expLabel} ]</div>
+      ${atCap ? '<div class="bar-wrap"><div class="bar exp" style="width:100%"></div></div>' : renderBar(expCur, expMax, 'exp')}
     </div>`;
   }
 

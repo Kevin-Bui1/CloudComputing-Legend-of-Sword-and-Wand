@@ -42,6 +42,8 @@ public class CampaignResponse {
             hr.setMaxHp(h.getMaxHp());
             hr.setMana(h.getMana());
             hr.setMaxMana(h.getMaxMana());
+            hr.setExperience(h.getExperienceInCurrentLevel());
+            hr.setExpToNextLevel(h.expToNextLevel());
             return hr;
         }).collect(java.util.stream.Collectors.toList());
 

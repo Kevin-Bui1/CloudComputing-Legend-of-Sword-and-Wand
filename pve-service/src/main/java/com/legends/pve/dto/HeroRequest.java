@@ -5,6 +5,8 @@ public class HeroRequest {
     private String name, heroClass;
     private int level = 1, attack = 5, defense = 5;
     private int hp = 100, maxHp = 100, mana = 50, maxMana = 50;
+    private int experience = 0;
+    private int expToNextLevel = 595;
 
     public HeroRequest() {}
     public String getName()                     { return name; }
@@ -25,4 +27,8 @@ public class HeroRequest {
     public void setMana(int mana)               { this.mana = mana; }
     public int getMaxMana()                     { return maxMana; }
     public void setMaxMana(int maxMana)         { this.maxMana = maxMana; }
+    public int getExperience()                  { return experience; }
+    public void setExperience(int experience)   { this.experience = experience; }
+    public int getExpToNextLevel()              { return expToNextLevel; }
+    public void setExpToNextLevel(int e)        { this.expToNextLevel = e; }
 }
