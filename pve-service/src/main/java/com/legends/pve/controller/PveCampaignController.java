@@ -103,4 +103,15 @@ public class PveCampaignController {
                 ? ResponseEntity.ok(response)
                 : ResponseEntity.badRequest().body(response);
     }
+
+    @PostMapping("/{userId}/inn/use-item")
+    public ResponseEntity<CampaignResponse> useItem(
+            @PathVariable Long userId,
+            @RequestBody InnActionRequest request) {
+        CampaignResponse response = pveController.useItem(userId, request.getItemName(), request.getHeroIndex());
+        return response.isSuccess()
+                ? ResponseEntity.ok(response)
+                : ResponseEntity.badRequest().body(response);
+    }
+
 }

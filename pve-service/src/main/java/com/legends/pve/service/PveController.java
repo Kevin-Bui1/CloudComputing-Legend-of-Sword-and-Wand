@@ -137,23 +137,8 @@ public class PveController {
             return CampaignResponse.error("Not enough gold. You need " + cost + "g but only have " + party.getGold() + "g.");
         }
 
-        // Apply effect to all living heroes
-        for (Hero h : party.getHeroes()) {
-            if (h.getHp() <= 0 && !itemName.equals("Elixir")) continue;
-            switch (itemName) {
-                case "Bread"  -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 20));
-                case "Cheese" -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 50));
-                case "Steak"  -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 200));
-                case "Water"  -> h.setMana(Math.min(h.getMaxMana(), h.getMana() + 10));
-                case "Juice"  -> h.setMana(Math.min(h.getMaxMana(), h.getMana() + 30));
-                case "Wine"   -> h.setMana(Math.min(h.getMaxMana(), h.getMana() + 100));
-                case "Elixir" -> {
-                    // revive + full HP + full mana for this hero
-                    h.setHp(h.getMaxHp());
-                    h.setMana(h.getMaxMana());
-                }
-            }
-        }
+        campaign.addItem(itemName);
+
         int itemScore = (cost / 2) * 10;
         campaign.addItemsValue(itemScore);
         return CampaignResponse.of(campaign, "Purchased " + itemName + " for " + cost + "g.", null);
@@ -190,6 +175,33 @@ public class PveController {
                 ? heroName + " joined your party for free!"
                 : heroName + " joined your party for " + cost + "g.";
         return CampaignResponse.of(campaign, msg, null);
+    }
+
+    public CampaignResponse useItem(Long userId, String itemName, int heroIndex) {
+        Campaign campaign = activeCampaigns.get(userId);
+        if (campaign == null) return CampaignResponse.error("No active campaign.");
+
+        Party party = campaign.getParty();
+        if (heroIndex < 0 || heroIndex >= party.getHeroes().size()) {
+            return CampaignResponse.error("Invalid hero index.");
+        }
+
+        if (!campaign.removeItem(itemName)) {
+            return CampaignResponse.error("You don't have any " + itemName + ".");
+        }
+
+        Hero h = party.getHeroes().get(heroIndex);
+        switch (itemName) {
+            case "Bread"  -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 20));
+            case "Cheese" -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 50));
+            case "Steak"  -> h.setHp(Math.min(h.getMaxHp(), h.getHp() + 200));
+            case "Water"  -> h.setMana(Math.min(h.getMaxMana(), h.getMana() + 10));
+            case "Juice"  -> h.setMana(Math.min(h.getMaxMana(), h.getMana() + 30));
+            case "Wine"   -> h.setMana(Math.min(h.getMaxMana(), h.getMana() + 100));
+            case "Elixir" -> { h.setHp(h.getMaxHp()); h.setMana(h.getMaxMana()); }
+            default -> { campaign.addItem(itemName); return CampaignResponse.error("Unknown item."); }
+        }
+        return CampaignResponse.of(campaign, "Used " + itemName + " on " + h.getName() + ".", null);
     }
 
     /** Removes the campaign session from memory. */

@@ -87,7 +87,7 @@
   <span class="brand">⚔ Legends of Sword and Wand</span>
   <span class="user-info" id="nav-user"></span>
   <button id="nav-dashboard-btn" class="secondary" onclick="goTo('dashboard')">Dashboard</button>
-  <button class="danger"    onclick="logout()">Logout</button>
+  <button class="danger" onclick="logout()">Logout</button>
 </div>
 
 <!--LOGIN SCREEN-->
@@ -107,7 +107,7 @@
   </div>
 </div>
 
-<!-- DASHBOARD  -->
+<!-- DASHBOARD -->
 <div id="screen-dashboard" class="screen">
   <h1>Dashboard</h1>
   <div class="row">
@@ -142,7 +142,7 @@
   </div>
 </div>
 
-<!-- PVE SETUP  -->
+<!-- PVE SETUP -->
 <div id="screen-pve-setup" class="screen">
   <h1>New Campaign</h1>
   <div class="card" style="max-width:460px">
@@ -191,7 +191,7 @@
   <!-- Room content -->
   <div id="room-content"></div>
 
-  <!-- Next room button (shown between rooms) -->
+  <!-- Next room button -->
   <div id="next-room-btn" style="margin-top:12px">
     <button class="gold" onclick="nextRoom()">Next Room →</button>
   </div>
@@ -238,12 +238,10 @@
   <h1>🏠 The Inn</h1>
   <div id="inn-heal-log" class="card" style="color:var(--success);font-size:.9rem;white-space:pre-line"></div>
   <div class="row" style="margin-top:12px">
-    <!-- Shop -->
     <div class="col card">
       <h2>🛒 Shop</h2>
       <div id="inn-shop"></div>
     </div>
-    <!-- Recruits -->
     <div class="col card">
       <h2>🧑‍🤝‍🧑 Recruits</h2>
       <div id="inn-recruits"></div>
@@ -272,7 +270,7 @@
 <script>
 
   // Configuration
-  const API = '';          // empty = same origin via gateway; set to 'http://localhost:8080' for local dev
+  const API = ''; // empty = same origin via gateway
 
   // State
   let state = {
@@ -285,7 +283,7 @@
     inBattle: false,
   };
 
-  // ── Utility ─────────────────────────────────────────────────────────────────
+  // ── Utility ──────────────────────────────────────────────────────────────────
 
   function setBattleMode(active) {
     state.inBattle = active;
@@ -360,7 +358,7 @@
     </div>`;
   }
 
-  // ── Auth (US1) ──────────────────────────────────────────────────────────────
+  // ── Auth ──────────────────────────────────────────────────────────────────────
 
   async function doRegister() {
     const u = document.getElementById('login-user').value.trim();
@@ -397,7 +395,7 @@
     goTo('login');
   }
 
-  // ── Dashboard ───────────────────────────────────────────────────────────────
+  // ── Dashboard ─────────────────────────────────────────────────────────────────
 
   async function loadDashboard() {
     const r = await api('GET', `/api/profile/${state.userId}`);
@@ -422,7 +420,6 @@
       partiesEl.innerHTML = '<p style="color:var(--muted);font-size:.9rem">No saved parties yet.</p>';
     }
 
-    // Check whether there is already an active campaign in progress
     const activeR = await api('GET', `/api/pve/${state.userId}/campaign`);
     const newCampaignBtn = document.getElementById('new-campaign-btn');
     if (activeR.ok) {
@@ -437,7 +434,7 @@
     }
   }
 
-  // ── PvE — start ─────────────────────────────────────────────────────────────
+  // ── PvE — start ───────────────────────────────────────────────────────────────
 
   async function startPve() {
     const activeR = await api('GET', `/api/pve/${state.userId}/campaign`);
@@ -458,7 +455,7 @@
     }
   }
 
-  // ── PvE — continue ──────────────────────────────────────────────────────────
+  // ── PvE — continue ────────────────────────────────────────────────────────────
 
   async function loadContinuePve() {
     const r = await api('GET', `/api/data/campaign/${state.userId}`);
@@ -489,7 +486,7 @@
     }
   }
 
-  // ── PvE — campaign view rendering ───────────────────────────────────────────
+  // ── PvE — campaign rendering ──────────────────────────────────────────────────
 
   function renderCampaign(data) {
     document.getElementById('room-num').textContent  = data.currentRoom || 0;
@@ -506,7 +503,7 @@
     }
   }
 
-  // ── PvE — next room ─────────────────────────────────────────────────────────
+  // ── PvE — next room ───────────────────────────────────────────────────────────
 
   async function nextRoom() {
     const r = await api('POST', `/api/pve/${state.userId}/next-room`);
@@ -515,8 +512,8 @@
       return;
     }
     const data = r.data;
-    document.getElementById('room-num').textContent  = data.currentRoom;
-    document.getElementById('gold-amt').textContent  = data.gold;
+    document.getElementById('room-num').textContent = data.currentRoom;
+    document.getElementById('gold-amt').textContent = data.gold;
     document.getElementById('pve-msg-inline').textContent = '';
     document.getElementById('next-room-btn').style.display = 'none';
 
@@ -532,25 +529,28 @@
       document.getElementById('pve-msg-inline').textContent = data.message;
       document.getElementById('next-room-btn').style.display = 'block';
     }
-
-    // Check campaign complete
-    if (data.currentRoom >= 30) {
-      const scoreR = await api('GET', `/api/pve/${state.userId}/score`);
-      const score  = scoreR.ok ? scoreR.data : 0;
-      await api('POST', `/api/data/scores/${state.userId}`, { score, username: state.username });
-      await api('PATCH', `/api/profile/${state.userId}/stats?newScore=${score}&ranking=0`);
-      await api('POST', `/api/pve/${state.userId}/end`);
-      document.getElementById('pve-msg-inline').textContent =
-          `🎉 Campaign complete! Final score: ${score}`;
-      document.getElementById('next-room-btn').style.display = 'none';
-    }
   }
 
-  // ── Battle ──────────────────────────────────────────────────────────────────
+  // ── Campaign complete — called after battle win or leaving inn at room 30 ──────
+
+  async function checkCampaignComplete() {
+    const roomNum = parseInt(document.getElementById('room-num').textContent, 10);
+    if (roomNum < 30) return;
+
+    const scoreR = await api('GET', `/api/pve/${state.userId}/score`);
+    const score  = scoreR.ok ? scoreR.data : 0;
+    await api('POST', `/api/data/scores/${state.userId}`, { score, username: state.username });
+    await api('PATCH', `/api/profile/${state.userId}/stats?newScore=${score}&ranking=0`);
+    await api('POST', `/api/pve/${state.userId}/end`);
+
+    document.getElementById('next-room-btn').style.display = 'none';
+    document.getElementById('pve-msg-inline').textContent = `🎉 Campaign complete! Final score: ${score}`;
+  }
+
+  // ── Battle ────────────────────────────────────────────────────────────────────
 
   let battleState = { playerUnits: [], enemyUnits: [], currentTurn: 'player', over: false };
 
-  // Shows ability picker; resolves with the chosen ability name (stripped of cost label) or null
   function pickAbility(options) {
     return new Promise(resolve => {
       const actions = document.getElementById('battle-actions');
@@ -565,7 +565,6 @@
       actions.querySelectorAll('[data-ability]').forEach(btn => {
         btn.addEventListener('click', () => {
           cleanup();
-          // Strip the "(X mana)" cost suffix before returning
           resolve(btn.dataset.ability.replace(/\s*\(\d+ mana\)/, ''));
         });
       });
@@ -576,7 +575,6 @@
     });
   }
 
-  // Shows clickable enemy buttons; resolves with the chosen enemy index or null if cancelled
   function pickEnemyTarget(livingEnemies) {
     return new Promise(resolve => {
       const actions = document.getElementById('battle-actions');
@@ -636,7 +634,6 @@
     let ability = '';
 
     if (action === 'CAST') {
-      // Step 1: show ability picker based on the active hero's class
       const activeHero = battleState.playerUnits.find(u => u.hp > 0) || {};
       const heroClass  = (activeHero.heroClass || activeHero.heroclass || '').toUpperCase();
 
@@ -648,54 +645,44 @@
       };
       const options = classAbilities[heroClass] || ['Cast (20 mana)'];
       ability = await pickAbility(options);
-      if (ability === null) return; // player cancelled
+      if (ability === null) return;
 
-      // Step 2: for damaging spells, also pick a target enemy
       const damagingSpells = ['Fireball', 'Chain Lightning', 'Berserker Attack'];
       if (damagingSpells.includes(ability)) {
         const livingEnemies = battleState.enemyUnits
           .map((e, i) => ({ ...e, index: i }))
           .filter(e => e.hp > 0);
 
-        if (livingEnemies.length === 0) {
-          await endBattle(true);
-          return;
-        }
+        if (livingEnemies.length === 0) { await endBattle(true); return; }
 
         if (livingEnemies.length === 1) {
           targetEnemyIndex = livingEnemies[0].index;
         } else {
           targetEnemyIndex = await pickEnemyTarget(livingEnemies);
-          if (targetEnemyIndex === null) return; // player cancelled
+          if (targetEnemyIndex === null) return;
         }
       }
 
     } else if (action === 'ATTACK') {
-      // Plain attack always needs a target
       const livingEnemies = battleState.enemyUnits
         .map((e, i) => ({ ...e, index: i }))
         .filter(e => e.hp > 0);
 
-      if (livingEnemies.length === 0) {
-        await endBattle(true);
-        return;
-      }
+      if (livingEnemies.length === 0) { await endBattle(true); return; }
 
       if (livingEnemies.length === 1) {
         targetEnemyIndex = livingEnemies[0].index;
       } else {
         targetEnemyIndex = await pickEnemyTarget(livingEnemies);
-        if (targetEnemyIndex === null) return; // player cancelled
+        if (targetEnemyIndex === null) return;
       }
     }
 
     if (!state.battleId) {
-      // Run battle logic client-side if battle-service is unreachable
       runLocalBattleTurn(action, targetEnemyIndex, ability);
       return;
     }
 
-    // Build query string and call battle-service
     let qs = `action=${action}`;
     if (targetEnemyIndex !== null) qs += `&targetIndex=${targetEnemyIndex}`;
     if (ability)                   qs += `&ability=${encodeURIComponent(ability)}`;
@@ -708,18 +695,14 @@
 
     const bd = r.data;
 
-    // If the cast failed due to insufficient mana, show message and return to action buttons
     if (bd.insufficientMana) {
       showMsg('battle-msg', 'Not enough mana! Choose a different action.', 'error');
       return;
     }
 
-    // Update local unit state from server response
-    // (battle-service returns playerParty / enemyParty)
     if (bd.playerParty) bd.playerParty.forEach((u, i) => { if (battleState.playerUnits[i]) Object.assign(battleState.playerUnits[i], u); });
     if (bd.enemyParty)  bd.enemyParty.forEach((u, i)  => { if (battleState.enemyUnits[i])  Object.assign(battleState.enemyUnits[i], u); });
 
-    // Log entries from server
     if (bd.log && bd.log.length) {
       bd.log.forEach(l => logBattle(l, l.includes('→') ? 'player-action' : 'enemy-action'));
     } else if (bd.actionResult) {
@@ -730,11 +713,11 @@
     renderBattleUnits();
 
     if (bd.battleOver) {
-      await endBattle(bd.winner && bd.winner.toLowerCase().includes('hero'));
+      await endBattle(bd.winner && bd.winner.toLowerCase().includes('player'));
     }
   }
 
-  // Client-side battle fallback (used when battle-service is unreachable)
+  // Client-side battle fallback
   function runLocalBattleTurn(action, targetEnemyIndex = null, ability = '') {
     const living = (units) => units.filter(u => u.hp > 0);
     const hero   = living(battleState.playerUnits)[0];
@@ -749,7 +732,7 @@
     if (!hero || !enemy) { endBattle(living(battleState.playerUnits).length > 0); return; }
 
     if (action === 'ATTACK') {
-      const dmg = Math.max(0, hero.attack - enemy.defense);
+      const dmg = Math.max(1, hero.attack - enemy.defense);
       enemy.hp  = Math.max(0, enemy.hp - dmg);
       logBattle(`${hero.name} → ATTACK → ${enemy.name} (-${dmg} HP)`, 'player-action');
 
@@ -776,7 +759,7 @@
         if (supportSpells.includes(ability)) {
           logBattle(`${hero.name} → ${ability} (support effect applied)`, 'player-action');
         } else {
-          const dmg = Math.max(0, hero.attack * 2 - enemy.defense);
+          const dmg = Math.max(1, hero.attack * 2 - enemy.defense);
           enemy.hp  = Math.max(0, enemy.hp - dmg);
           logBattle(`${hero.name} → ${ability || 'CAST'} → ${enemy.name} (-${dmg} HP)`, 'player-action');
         }
@@ -785,7 +768,7 @@
 
     // Enemy counter-attack
     if (enemy.hp > 0) {
-      const dmg = Math.max(0, enemy.attack - hero.defense);
+      const dmg = Math.max(1, enemy.attack - hero.defense);
       hero.hp   = Math.max(0, hero.hp - dmg);
       logBattle(`${enemy.name} → ATTACK → ${hero.name} (-${dmg} HP)`, 'enemy-action');
     }
@@ -804,9 +787,6 @@
 
     logBattle(playerWon ? '🏆 Victory!' : '💀 Defeated — heroes revived at 1 HP.', 'system-msg');
 
-    // Tell pve-service to apply rewards.
-    // enemyLevels lets the server compute exp/gold via 50*L and 75*L.
-    // heroSnapshots lets the server know who survived (hp > 0) and their mana.
     const r = await api('POST', `/api/pve/${state.userId}/battle/resolve`, {
       playerWon,
       enemyLevels:   battleState.enemyUnits.map(e => e.level),
@@ -824,37 +804,42 @@
       document.getElementById('gold-amt').textContent = r.data.gold || 0;
     }
 
-    setTimeout(() => {
+    setTimeout(async () => {
       clearMsg('battle-msg');
       goTo('pve');
       document.getElementById('next-room-btn').style.display = 'block';
-      document.getElementById('pve-msg-inline').textContent  = msg;
+      document.getElementById('pve-msg-inline').textContent = msg;
+      // Refresh party cards with updated HP/mana after battle
+      const campaignR = await api('GET', `/api/pve/${state.userId}/campaign`);
+      if (campaignR.ok) renderCampaign(campaignR.data);
+      // Check if campaign is complete after this battle
+      await checkCampaignComplete();
     }, 2000);
   }
 
-  // ── Inn ─────────────────────────────────────────────────────────────────────
+  // ── Inn ───────────────────────────────────────────────────────────────────────
 
-  let innState = { recruits: [] };
+  let innState = { recruits: [], heroes: [] };
 
   function enterInn(message, heroes, gold, recruits) {
     document.getElementById('inn-heal-log').textContent = message;
     document.getElementById('gold-amt').textContent = gold || 0;
     innState.recruits = recruits || [];
+    innState.heroes   = heroes   || [];
     renderInnShop(gold);
     renderInnRecruits(heroes.length);
     goTo('inn');
   }
 
   function renderInnShop(gold) {
-    // Items per spec: Bread/Cheese/Steak (HP), Water/Juice/Wine (Mana), Elixir (revive + full)
     const items = [
-      { name: 'Bread',  cost: 200,  desc: '+20 HP' },
-      { name: 'Cheese', cost: 500,  desc: '+50 HP' },
-      { name: 'Steak',  cost: 1000, desc: '+200 HP' },
-      { name: 'Water',  cost: 150,  desc: '+10 Mana' },
-      { name: 'Juice',  cost: 400,  desc: '+30 Mana' },
-      { name: 'Wine',   cost: 750,  desc: '+100 Mana' },
-      { name: 'Elixir', cost: 2000, desc: 'Revive + Full HP + Full Mana' },
+      { name: 'Bread',  cost: 200,  desc: '+20 HP (stored in inventory)' },
+      { name: 'Cheese', cost: 500,  desc: '+50 HP (stored in inventory)' },
+      { name: 'Steak',  cost: 1000, desc: '+200 HP (stored in inventory)' },
+      { name: 'Water',  cost: 150,  desc: '+10 Mana (stored in inventory)' },
+      { name: 'Juice',  cost: 400,  desc: '+30 Mana (stored in inventory)' },
+      { name: 'Wine',   cost: 750,  desc: '+100 Mana (stored in inventory)' },
+      { name: 'Elixir', cost: 2000, desc: 'Revive + Full HP + Full Mana (stored in inventory)' },
     ];
     const currentGold = parseInt(document.getElementById('gold-amt').textContent, 10) || 0;
     document.getElementById('inn-shop').innerHTML = `
@@ -898,7 +883,7 @@
 
   async function buyItem(itemName) {
     const r = await api('POST', `/api/pve/${state.userId}/inn/buy`, { itemName });
-    showMsg('inn-msg', r.data.message || (r.ok ? 'Bought!' : 'Failed.'), r.ok ? 'success' : 'error');
+    showMsg('inn-msg', r.data.message || (r.ok ? 'Added to inventory!' : 'Failed.'), r.ok ? 'success' : 'error');
     if (r.ok) {
       document.getElementById('gold-amt').textContent = r.data.gold || 0;
       renderInnShop(r.data.gold || 0);
@@ -911,54 +896,74 @@
     if (r.ok) {
       document.getElementById('gold-amt').textContent = r.data.gold || 0;
       innState.recruits = innState.recruits.filter(rec => rec.name !== heroName);
-      renderInnRecruits(r.data.heroes ? r.data.heroes.length : 0);
+      const newSize = r.data.heroes ? r.data.heroes.length : innState.heroes.length + 1;
+      renderInnRecruits(newSize);
       renderInnShop(r.data.gold || 0);
     }
   }
 
-  function leaveInn() {
+  // FIX: refresh party cards from server when leaving inn so healed HP/mana shows correctly
+  async function leaveInn() {
     clearMsg('inn-msg');
+    const r = await api('GET', `/api/pve/${state.userId}/campaign`);
+    if (r.ok) renderCampaign(r.data);
     goTo('pve');
     document.getElementById('next-room-btn').style.display = 'block';
+    // Check if campaign is complete after leaving inn
+    await checkCampaignComplete();
   }
 
-  // ── Inventory ───────────────────────────────────────────────────────────────
+  // ── Inventory ─────────────────────────────────────────────────────────────────
 
   async function openInventory() {
     const r = await api('GET', `/api/pve/${state.userId}/campaign`);
-    const modal = document.getElementById('inventory-modal');
-    if (!r.ok || !r.data.inventory) {
+    if (!r.ok || !r.data.inventory || Object.keys(r.data.inventory).filter(k => r.data.inventory[k] > 0).length === 0) {
       document.getElementById('inventory-list').innerHTML = '<p style="color:var(--muted)">Inventory empty.</p>';
     } else {
-      const inv = r.data.inventory;
+      const inv  = r.data.inventory;
       const keys = Object.keys(inv).filter(k => inv[k] > 0);
-      if (keys.length === 0) {
-        document.getElementById('inventory-list').innerHTML = '<p style="color:var(--muted)">Inventory empty.</p>';
-      } else {
-        document.getElementById('inventory-list').innerHTML = keys.map(k =>
-          `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
-             <span><strong>${k}</strong> × ${inv[k]}</span>
-             <button class="secondary" style="padding:4px 10px;font-size:.8rem" onclick="useItemOnHero('${k}')">Use</button>
-           </div>`
-        ).join('');
-      }
+      document.getElementById('inventory-list').innerHTML = keys.map(k =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">
+           <span><strong>${k}</strong> × ${inv[k]}</span>
+           <button class="secondary" style="padding:4px 10px;font-size:.8rem" onclick="useItemOnHero('${k}')">Use</button>
+         </div>`
+      ).join('');
     }
-    modal.style.display = 'block';
+    document.getElementById('inventory-modal').style.display = 'block';
   }
 
   async function useItemOnHero(itemName) {
-    const heroIndex = parseInt(prompt('Use on hero index (0 = first hero, 1 = second, etc.):'), 10);
-    if (isNaN(heroIndex)) return;
+    const r = await api('GET', `/api/pve/${state.userId}/campaign`);
+    if (!r.ok) return;
+    const heroes = r.data.heroes || [];
+    if (heroes.length === 0) return;
+
+    document.getElementById('inventory-list').innerHTML =
+      `<p style="color:var(--muted);margin-bottom:8px">Use <strong>${itemName}</strong> on which hero?</p>` +
+      heroes.map((h, i) =>
+        `<button class="secondary" style="margin:4px;width:100%;text-align:left" onclick="confirmUseItem('${itemName}', ${i})">
+           ${h.name} (Lv ${h.level}) — ${h.hp}/${h.maxHp} HP
+         </button>`
+      ).join('') +
+      `<button class="secondary" style="margin-top:8px" onclick="openInventory()">← Back</button>`;
+  }
+
+  async function confirmUseItem(itemName, heroIndex) {
     const r = await api('POST', `/api/pve/${state.userId}/inn/use-item`, { itemName, heroIndex });
-    alert(r.data.message || (r.ok ? 'Item used!' : 'Failed.'));
-    closeInventory();
+    if (r.ok) {
+      showMsg('pve-msg-inline', r.data.message, 'success');
+      closeInventory();
+      renderCampaign(r.data);
+    } else {
+      alert(r.data.message || 'Failed to use item.');
+    }
   }
 
   function closeInventory() {
     document.getElementById('inventory-modal').style.display = 'none';
   }
 
-  // ── Save & Exit ─────────────────────────────────────────────────────────────
+  // ── Save & Exit ───────────────────────────────────────────────────────────────
 
   async function saveAndExit() {
     const r = await api('GET', `/api/pve/${state.userId}/campaign`);
@@ -996,7 +1001,7 @@
     }
   }
 
-  // ── PvP Invite ──────────────────────────────────────────────────────────────
+  // ── PvP Invite ────────────────────────────────────────────────────────────────
 
   async function sendPvpInvite() {
     const opponent = document.getElementById('pvp-opponent').value.trim();

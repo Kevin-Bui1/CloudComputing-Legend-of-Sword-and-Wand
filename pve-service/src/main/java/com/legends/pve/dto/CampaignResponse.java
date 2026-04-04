@@ -4,6 +4,7 @@ import com.legends.pve.model.Campaign;
 import com.legends.pve.model.Enemy;
 import com.legends.pve.model.InnRoom;
 import java.util.List;
+import java.util.Map;
 
 /** Full campaign state response returned to the client. */
 public class CampaignResponse {
@@ -18,6 +19,7 @@ public class CampaignResponse {
     private int expReward;
     private int goldReward;
     private List<InnRoom.Recruit> recruits;
+    private Map<String, Integer> inventory;
 
     public static CampaignResponse of(Campaign c, String message, String roomType) {
         CampaignResponse r = new CampaignResponse();
@@ -27,6 +29,7 @@ public class CampaignResponse {
         r.currentRoom = c.getCurrentRoom();
         r.gold = c.getParty().getGold();
         r.cumulativeLevel = c.getParty().getCumulativeLevel();
+        r.inventory = c.getInventory();
 
         r.heroes = c.getParty().getHeroes().stream().map(h -> {
             HeroRequest hr = new HeroRequest();
@@ -68,4 +71,6 @@ public class CampaignResponse {
     public void setGoldReward(int goldReward)             { this.goldReward = goldReward; }
     public List<InnRoom.Recruit> getRecruits()            { return recruits; }
     public void setRecruits(List<InnRoom.Recruit> r)      { this.recruits = r; }
+    public Map<String, Integer> getInventory()              { return inventory; }
+    public void setInventory(Map<String, Integer> inv)      { this.inventory = inv; }
 }
