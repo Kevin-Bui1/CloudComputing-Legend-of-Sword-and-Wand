@@ -1,5 +1,7 @@
 package com.legends.pve.model;
 
+import java.util.HashMap;
+import java.util.Map;
 
 public class Campaign {
 
