@@ -229,8 +229,18 @@
     <button class="secondary" onclick="battleAction('DEFEND')">🛡 Defend</button>
     <button class="secondary" onclick="battleAction('CAST')">✨ Cast</button>
     <button class="secondary" onclick="battleAction('WAIT')">⏳ Wait</button>
+    <button class="secondary" onclick="openBattleInventory()" style="margin-left:auto">🎒 Inventory</button>
   </div>
   <div id="battle-msg" style="margin-top:10px"></div>
+
+  <!-- Battle inventory modal -->
+  <div id="battle-inventory-modal" style="display:none;margin-top:12px" class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <h2 style="margin:0">🎒 Use Item in Battle</h2>
+      <button class="secondary" style="padding:4px 10px;font-size:.8rem" onclick="closeBattleInventory()">✕ Close</button>
+    </div>
+    <div id="battle-inventory-list"></div>
+  </div>
 </div>
 
 <!-- INN SCREEN -->
@@ -961,6 +971,75 @@
 
   function closeInventory() {
     document.getElementById('inventory-modal').style.display = 'none';
+  }
+
+  // ── Battle Inventory ──────────────────────────────────────────────────────────
+
+  async function openBattleInventory() {
+    const modal = document.getElementById('battle-inventory-modal');
+    const listEl = document.getElementById('battle-inventory-list');
+
+    const r = await api('GET', `/api/pve/${state.userId}/campaign`);
+    const inv = (r.ok && r.data.inventory) ? r.data.inventory : {};
+    const keys = Object.keys(inv).filter(k => inv[k] > 0);
+
+    if (keys.length === 0) {
+      listEl.innerHTML = '<p style="color:var(--muted)">Your inventory is empty.</p>';
+    } else {
+      listEl.innerHTML = keys.map(k =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)">
+           <div>
+             <strong>${k}</strong>
+             <span style="color:var(--muted);font-size:.8rem;margin-left:8px">× ${inv[k]}</span>
+           </div>
+           <button class="secondary" style="padding:4px 10px;font-size:.8rem" onclick="selectBattleItemTarget('${k}')">Use</button>
+         </div>`
+      ).join('');
+    }
+    modal.style.display = 'block';
+  }
+
+  function closeBattleInventory() {
+    document.getElementById('battle-inventory-modal').style.display = 'none';
+  }
+
+  async function selectBattleItemTarget(itemName) {
+    const listEl = document.getElementById('battle-inventory-list');
+    const heroes = battleState.playerUnits.filter(h => h.hp > 0);
+    if (heroes.length === 0) {
+      listEl.innerHTML = '<p style="color:var(--danger)">No living heroes to use item on.</p>';
+      return;
+    }
+    listEl.innerHTML =
+      `<p style="color:var(--muted);margin-bottom:10px">Use <strong>${itemName}</strong> on which hero?</p>` +
+      battleState.playerUnits.map((h, i) => {
+        const dead = h.hp <= 0;
+        return `<button class="secondary" style="margin:4px;width:100%;text-align:left;opacity:${dead ? 0.4 : 1}" ${dead ? 'disabled' : ''} onclick="useBattleItem('${itemName}', ${i})">
+          ${h.name} (Lv ${h.level}) — ${h.hp}/${h.maxHp} HP · ${h.mana}/${h.maxMana} Mana
+        </button>`;
+      }).join('') +
+      `<button class="secondary" style="margin-top:10px" onclick="openBattleInventory()">← Back</button>`;
+  }
+
+  async function useBattleItem(itemName, heroIndex) {
+    const r = await api('POST', `/api/pve/${state.userId}/inn/use-item`, { itemName, heroIndex });
+    closeBattleInventory();
+    if (r.ok && r.data) {
+      // Update battleState player units with refreshed HP/mana
+      if (r.data.heroes) {
+        r.data.heroes.forEach((h, i) => {
+          if (battleState.playerUnits[i]) {
+            battleState.playerUnits[i].hp   = h.hp;
+            battleState.playerUnits[i].mana = h.mana;
+          }
+        });
+      }
+      renderBattleUnits();
+      logBattle(`🎒 Used ${itemName} on ${battleState.playerUnits[heroIndex]?.name || 'hero'}.`, 'system-msg');
+      showMsg('battle-msg', r.data.message || `Used ${itemName}!`, 'success');
+    } else {
+      showMsg('battle-msg', (r.data && r.data.message) || 'Failed to use item.', 'error');
+    }
   }
 
   // ── Save & Exit ───────────────────────────────────────────────────────────────
